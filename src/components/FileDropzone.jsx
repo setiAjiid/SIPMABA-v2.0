@@ -84,7 +84,10 @@ export default function FileDropzone({
           type="file"
           accept={accept.join(",")}
           className="hidden"
-          onChange={(e) => pilih(e.target.files[0])}
+          onChange={(e) => {
+            pilih(e.target.files[0]);
+            e.target.value = "";
+          }}
         />
       </div>
 
