@@ -1,7 +1,10 @@
+import Button from "./components/Button";
+
 export default function App() {
   return (
-    <div className="bg-brand text-surface p-4 rounded-lg shadow-card">
-      Uji token
+    <div className="flex gap-4 p-8">
+      <Button>Masuk</Button>
+      <Button variant="secondary">Batal</Button>
     </div>
   );
 }
