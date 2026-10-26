@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { Lock } from "lucide-react";
+import AuthLayout from "../layouts/AuthLayout";
 
 export default function Masuk() {
   const [namaPengguna, setNamaPengguna] = useState("");
@@ -20,10 +20,10 @@ export default function Masuk() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <AuthLayout>
       <div className="flex w-full max-w-md flex-col gap-6 rounded-2xl bg-surface p-10 shadow-card">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-ink">Masuk ke akun Anda</h1>
+          <h2 className="text-2xl font-bold text-ink">Masuk ke akun Anda</h2>
           <p className="text-sm text-muted">
             Gunakan nama pengguna dan kata sandi yang terdaftar.
           </p>
@@ -61,12 +61,7 @@ export default function Masuk() {
             Masuk
           </Button>
         </form>
-
-        <p className="flex items-center justify-center gap-2 text-xs text-muted">
-          <Lock size={14} />
-          Data Anda dienkripsi sebelum disimpan.
-        </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }
