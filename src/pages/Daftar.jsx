@@ -28,7 +28,7 @@ export default function Daftar() {
     <AuthLayout>
       <div className="flex w-full max-w-md flex-col gap-6 rounded-2xl bg-surface p-10 shadow-card">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-ink">Buat akun baru</h1>
+          <h2 className="text-2xl font-bold text-ink">Buat akun baru</h2>
           <p className="text-sm text-muted">
             Daftarkan akun untuk memulai proses penerimaan mahasiswa baru.
           </p>
