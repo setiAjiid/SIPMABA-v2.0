@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import InputKataSandi from "../components/InputKataSandi";
 import AuthLayout from "../layouts/AuthLayout";
 
 export default function Daftar() {
@@ -26,7 +27,7 @@ export default function Daftar() {
 
   return (
     <AuthLayout>
-      <div className="flex w-full max-w-md flex-col gap-6 rounded-2xl bg-surface p-10 shadow-card">
+      <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold text-ink">Buat akun baru</h2>
           <p className="text-sm text-muted">
@@ -55,24 +56,22 @@ export default function Daftar() {
               onChange={(e) => setEmail(e.target.value)}
               error={errors.email}
             />
-            <Input
+            <InputKataSandi
               label="Kata sandi"
-              type="password"
               placeholder="Masukkan kata sandi"
               value={kataSandi}
               onChange={(e) => setKataSandi(e.target.value)}
               error={errors.kataSandi}
             />
-            <Input
+            <InputKataSandi
               label="Konfirmasi kata sandi"
-              type="password"
               placeholder="Ulangi kata sandi"
               value={konfirmasi}
               onChange={(e) => setKonfirmasi(e.target.value)}
               error={errors.konfirmasi}
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="h-12 w-full">
             Daftar
           </Button>
         </form>

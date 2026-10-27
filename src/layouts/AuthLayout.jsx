@@ -2,10 +2,12 @@ import { NavLink } from "react-router-dom";
 import { Lock } from "lucide-react";
 import logoIts from "../assets/logo-its.svg";
 
-const tabBase =
-  "flex h-10 flex-1 items-center justify-center rounded-md text-sm font-bold transition-colors";
-const tabAktif = "bg-surface text-brand shadow-card";
-const tabTidakAktif = "text-muted hover:text-ink";
+const tab = ({ isActive }) =>
+  `flex-1 border-b-2 py-3 text-center text-sm font-bold transition-colors ${
+    isActive
+      ? "border-brand text-brand"
+      : "border-border text-muted hover:text-ink"
+  }`;
 
 const heks = `a4c1 23b1 612d d272 d137 1c17
 7f09 e5a2 3c4d 91b8 0a6e f2d5
@@ -102,39 +104,34 @@ export default function AuthLayout({ children }) {
         </p>
       </aside>
 
-      <main className="flex flex-col items-center justify-center gap-6 bg-background p-6">
-        <div className="text-center">
-          <p className="text-sm text-muted">Selamat datang di</p>
-          <h1 className="text-2xl font-bold text-ink">Portal SIPMABA</h1>
-        </div>
+      <main className="flex items-center justify-center bg-background p-6">
+        <div className="flex w-full max-w-[448px] flex-col gap-6">
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-muted">Selamat datang di</p>
+            <h1 className="text-4xl font-bold tracking-tight text-ink">
+              Portal SIPMABA
+            </h1>
+          </div>
 
-        <nav className="flex w-full max-w-md gap-1 rounded-lg bg-brand-soft p-1">
-          <NavLink
-            to="/masuk"
-            className={({ isActive }) =>
-              `${tabBase} ${isActive ? tabAktif : tabTidakAktif}`
-            }
-          >
-            Masuk
-          </NavLink>
-          <NavLink
-            to="/daftar"
-            className={({ isActive }) =>
-              `${tabBase} ${isActive ? tabAktif : tabTidakAktif}`
-            }
-          >
-            Daftar
-          </NavLink>
-        </nav>
+          <div className="rounded-2xl border border-border bg-surface p-10 shadow-card">
+            <nav className="mb-6 flex">
+              <NavLink to="/masuk" className={tab}>
+                Masuk
+              </NavLink>
+              <NavLink to="/daftar" className={tab}>
+                Daftar
+              </NavLink>
+            </nav>
 
-        {children}
+            {children}
 
-        <div className="flex flex-col items-center gap-1 text-xs text-muted">
-          <p className="flex items-center gap-2">
-            <Lock size={14} />
-            Data Anda dikirim melalui koneksi terenkripsi.
-          </p>
-          <p>
+            <p className="mt-6 flex items-center justify-center gap-2 text-xs text-muted">
+              <Lock size={16} />
+              Data Anda dikirim melalui koneksi terenkripsi.
+            </p>
+          </div>
+
+          <p className="text-center text-xs text-muted">
             Butuh bantuan?{" "}
             <a href="#" className="font-semibold text-brand hover:underline">
               Hubungi pusat bantuan

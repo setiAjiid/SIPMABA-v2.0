@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import InputKataSandi from "../components/InputKataSandi";
 import AuthLayout from "../layouts/AuthLayout";
 
 export default function Masuk() {
@@ -21,11 +22,11 @@ export default function Masuk() {
 
   return (
     <AuthLayout>
-      <div className="flex w-full max-w-md flex-col gap-6 rounded-2xl bg-surface p-10 shadow-card">
+      <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold text-ink">Masuk ke akun Anda</h2>
           <p className="text-sm text-muted">
-            Gunakan nama pengguna dan kata sandi yang terdaftar.
+            Lanjutkan proses pendaftaran mahasiswa baru.
           </p>
         </div>
 
@@ -34,7 +35,7 @@ export default function Masuk() {
           noValidate
           className="flex flex-col gap-6"
         >
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             <Input
               label="Nama pengguna"
               placeholder="Masukkan nama pengguna"
@@ -42,22 +43,23 @@ export default function Masuk() {
               onChange={(e) => setNamaPengguna(e.target.value)}
               error={errors.namaPengguna}
             />
-            <Input
+            <InputKataSandi
               label="Kata sandi"
-              type="password"
               placeholder="Masukkan kata sandi"
               value={kataSandi}
               onChange={(e) => setKataSandi(e.target.value)}
               error={errors.kataSandi}
+              aksiLabel={
+                <a
+                  href="#"
+                  className="text-sm font-bold text-brand hover:underline"
+                >
+                  Lupa kata sandi?
+                </a>
+              }
             />
-            <a
-              href="#"
-              className="text-sm font-semibold text-brand hover:underline"
-            >
-              Lupa kata sandi?
-            </a>
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="h-12 w-full">
             Masuk
           </Button>
         </form>
