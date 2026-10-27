@@ -127,7 +127,7 @@ export default function Analisis() {
 
   return (
     <SidebarLayout judul="BERKAS TERENKRIPSI" samping={daftar}>
-      <div className="flex max-w-[876px] flex-col gap-6">
+      <div className="mx-auto flex max-w-[876px] flex-col gap-6">
         <header>
           <h1 className="text-3xl font-bold tracking-tight text-ink">
             Uji kecepatan dekripsi

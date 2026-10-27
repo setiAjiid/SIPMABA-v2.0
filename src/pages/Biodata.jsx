@@ -68,7 +68,7 @@ export default function Biodata() {
 
   return (
     <SidebarLayout judul="BIODATA" menu={menu} aktif={tab} onPilih={setTab}>
-      <div className="flex max-w-[876px] flex-col gap-8">
+      <div className="mx-auto flex max-w-[876px] flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold tracking-tight text-ink">
             {aktif.label}
