@@ -10,39 +10,43 @@ const menu = [
 export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex h-16 items-center justify-between border-b border-border bg-surface px-8">
-        <div className="flex items-center gap-10">
-          <span className="text-lg font-bold text-brand">SIPMABA</span>
-          <nav className="flex gap-1">
-            {menu.map((m) => (
-              <NavLink
-                key={m.to}
-                to={m.to}
-                className={({ isActive }) =>
-                  `rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-                    isActive
-                      ? "bg-brand-soft text-brand"
-                      : "text-muted hover:text-ink"
-                  }`
-                }
-              >
-                {m.label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-muted">Pengguna</span>
-          <NavLink
-            to="/masuk"
-            className="font-semibold text-brand hover:underline"
-          >
-            Keluar
-          </NavLink>
+      <header className="h-16 bg-brand text-surface">
+        <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-6">
+          <div className="flex h-full items-center gap-10">
+            <span className="text-sm font-bold tracking-[0.2em]">SIPMABA</span>
+            <nav className="flex h-full gap-1">
+              {menu.map((m) => (
+                <NavLink
+                  key={m.to}
+                  to={m.to}
+                  className={({ isActive }) =>
+                    `flex h-full items-center border-b-2 px-3 text-sm transition-colors ${
+                      isActive
+                        ? "border-surface font-semibold text-surface"
+                        : "border-transparent text-surface/70 hover:text-surface"
+                    }`
+                  }
+                >
+                  {m.label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-4 text-sm">
+            <span className="font-semibold">Pengguna</span>
+            <NavLink
+              to="/masuk"
+              className="rounded-lg border border-surface/70 px-4 py-2 transition-colors hover:bg-surface/10"
+            >
+              Keluar
+            </NavLink>
+          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl p-8">
-        <Outlet />
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <div className="max-w-3xl">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
