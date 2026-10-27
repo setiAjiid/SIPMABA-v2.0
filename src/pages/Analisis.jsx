@@ -181,6 +181,11 @@ export default function Analisis() {
             <span className="min-w-0">
               <span className="block truncate text-sm">{b.nama_asli}</span>
               <span className="block text-xs font-normal text-muted">
+                {b.kode_berkas === "video_dokumentasi"
+                  ? "Video · "
+                  : b.kode_berkas === "dokumen_lain"
+                    ? "Dokumen · "
+                    : "Gambar · "}
                 {formatUkuran(b.ukuran_byte)}
               </span>
             </span>
@@ -198,7 +203,7 @@ export default function Analisis() {
             Uji kecepatan dekripsi
           </h1>
           <p className="text-sm text-muted">
-            Bandingkan performa dekripsi berkas dengan tiga algoritma.
+            Bandingkan performa dekripsi berkas dengan tiga algoritma. Untuk dokumen dan video, waktu mencakup seluruh potongan.
           </p>
         </header>
 

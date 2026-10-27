@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Button from "../components/Button";
 import FileDropzone from "../components/FileDropzone";
 import SidebarLayout from "../layouts/SidebarLayout";
 import {
@@ -32,11 +33,45 @@ const teks = {
     keterangan: "Unggah dokumen pendukung kondisi ekonomi dan tempat tinggal.",
   },
 };
+const semuaItem = [...daftarUlang, ...unggahBerkas.flatMap((grup) => grup.item)];
 
 export default function Berkas() {
   const [aktif, setAktif] = useState("daftar-ulang");
   const [daftar, muatUlang] = useDaftarBerkas();
+  const [tertunda, setTertunda] = useState({});
+  const [menyimpan, setMenyimpan] = useState(false);
+  const [pesan, setPesan] = useState(null);
   const semua = daftar?.berkas ?? [];
+  const jumlahTertunda = Object.values(tertunda).reduce((total, files) => total + files.length, 0);
+
+  function pilih(b, files) {
+    setTertunda((lama) => ({ ...lama, [b.id]: files }));
+    setPesan(null);
+  }
+
+  async function simpan() {
+    if (menyimpan || jumlahTertunda === 0) return;
+    setMenyimpan(true);
+    setPesan(null);
+    try {
+      for (const b of semuaItem) {
+        const files = tertunda[b.id] ?? [];
+        const { onUnggah } = propsBerkas(b);
+        for (const file of files) {
+          await onUnggah(file);
+          setTertunda((lama) => ({
+            ...lama,
+            [b.id]: (lama[b.id] ?? []).filter((item) => item !== file),
+          }));
+        }
+      }
+      setPesan({ jenis: "sukses", teks: "Berkas berhasil disimpan." });
+    } catch (err) {
+      setPesan({ jenis: "galat", teks: err.message });
+    } finally {
+      setMenyimpan(false);
+    }
+  }
 
   // Kotak banyak berkas (rapor) memakai kode berakhiran nomor slot,
   // misalnya rapor_sem_1 sampai rapor_sem_7.
@@ -90,11 +125,9 @@ export default function Berkas() {
             (n) => !slotTerpakai.has(`${b.kode}${n}`),
           );
           kode = `${b.kode}${slot}`;
-          // Dicatat di sini (bukan di array yang ditampilkan) supaya
-          // unggahan berikutnya dalam satu pilihan memakai slot lain.
-          slotTerpakai.add(kode);
         }
         await kirimBerkas(kode, file);
+        if (banyak) slotTerpakai.add(kode);
         muatUlang();
       },
       onUnduh: (berkas, algoritma) => unduhBerkas(berkas.id, algoritma),
@@ -127,6 +160,9 @@ export default function Berkas() {
                 optional={b.optional}
                 jumlah={b.jumlah}
                 {...propsBerkas(b)}
+                tertunda={tertunda[b.id] ?? []}
+                onPilih={(files) => pilih(b, files)}
+                menyimpan={menyimpan}
               />
             ))}
           </div>
@@ -146,10 +182,26 @@ export default function Berkas() {
                   minKB={b.minKB}
                   maxKB={b.maxKB}
                   {...propsBerkas(b)}
+                  tertunda={tertunda[b.id] ?? []}
+                  onPilih={(files) => pilih(b, files)}
+                  menyimpan={menyimpan}
                 />
               ))}
             </section>
           ))}
+        <div className="sticky bottom-0 -mx-8 flex items-center justify-end gap-4 border-t border-border bg-surface px-8 py-4">
+          {pesan && (
+            <p
+              role={pesan.jenis === "galat" ? "alert" : "status"}
+              className={`text-sm ${pesan.jenis === "galat" ? "text-error" : "text-success"}`}
+            >
+              {pesan.teks}
+            </p>
+          )}
+          <Button type="button" onClick={simpan} disabled={menyimpan || jumlahTertunda === 0}>
+            {menyimpan ? "Menyimpan..." : "Simpan"}
+          </Button>
+        </div>
       </div>
     </SidebarLayout>
   );
