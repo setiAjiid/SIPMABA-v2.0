@@ -91,13 +91,13 @@ export const unggahBerkas = [
       },
       {
         id: "video-dokumentasi",
-        tidakTersedia:
-          "Belum tersedia: ukuran berkas melebihi batas pengiriman terenkripsi (1 MB).",
+        kode: "video_dokumentasi",
+        video: true,
         label: "Video dokumentasi",
-        hint: "MP4/WebM, maks 100 MB",
+        hint: "MP4/WebM, maks 10 MB",
         accept: ["video/mp4", "video/webm"],
         minKB: 0,
-        maxKB: 100 * 1024,
+        maxKB: 10 * 1024,
       },
     ],
   },

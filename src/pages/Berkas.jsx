@@ -6,6 +6,7 @@ import {
   unggahBerkas as kirimBerkas,
   useDaftarBerkas,
 } from "../lib/berkas";
+import { unduhVideo, unggahVideo } from "../lib/video";
 import { daftarUlang, unggahBerkas } from "../data/berkas";
 
 const menu = [
@@ -38,6 +39,21 @@ export default function Berkas() {
       banyak ? x.kode_berkas.startsWith(b.kode) : x.kode_berkas === b.kode,
     );
     const slotTerpakai = new Set(terunggah.map((x) => x.kode_berkas));
+    if (b.video) {
+      return {
+        terunggah,
+        onUnggah: async (file, lapor) => {
+          await unggahVideo(file, lapor);
+          muatUlang();
+        },
+        onUnduh: (berkas, algoritma, lapor) =>
+          unduhVideo(berkas, algoritma, lapor),
+        onHapus: async (berkas) => {
+          await hapusBerkas(berkas.id);
+          muatUlang();
+        },
+      };
+    }
     return {
       terunggah,
       tidakTersedia: b.tidakTersedia,

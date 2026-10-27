@@ -9,8 +9,10 @@ const latar = {
 };
 
 // terunggah: berkas milik kotak ini yang sudah tersimpan di server.
-// onUnggah(file) dan onHapus(berkas) dipanggil satu per satu dan boleh
-// melempar galat; pesannya ditampilkan di bawah kotak.
+// onUnggah(file, lapor) dan onHapus(berkas) dipanggil satu per satu dan
+// boleh melempar galat; pesannya ditampilkan di bawah kotak. lapor(teks)
+// untuk progres. onUnduh(berkas, algoritma, lapor) opsional, menampilkan
+// tombol unduh dengan pilihan algoritma.
 export default function FileDropzone({
   label,
   hint,
@@ -22,12 +24,15 @@ export default function FileDropzone({
   terunggah = [],
   onUnggah,
   onHapus,
+  onUnduh,
   tidakTersedia,
 }) {
   const inputRef = useRef(null);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
   const [sibuk, setSibuk] = useState(false);
+  const [progres, setProgres] = useState("");
+  const [algoritma, setAlgoritma] = useState("AES");
   const banyak = jumlah > 1;
 
   async function pilih(daftar) {
@@ -62,23 +67,25 @@ export default function FileDropzone({
     setError("");
     setSibuk(true);
     try {
-      for (const f of tujuan) await onUnggah?.(f);
+      for (const f of tujuan) await onUnggah?.(f, setProgres);
     } catch (err) {
       setError(err.message);
     } finally {
       setSibuk(false);
+      setProgres("");
     }
   }
 
-  async function hapus(berkas) {
+  async function jalankan(aksi) {
     setSibuk(true);
     setError("");
     try {
-      await onHapus?.(berkas);
+      await aksi();
     } catch (err) {
       setError(err.message);
     } finally {
       setSibuk(false);
+      setProgres("");
     }
   }
 
@@ -120,7 +127,7 @@ export default function FileDropzone({
             <Upload size={18} className="text-brand" />
             <p className="text-sm font-semibold text-ink">
               {sibuk
-                ? "Mengenkripsi dan menyimpan..."
+                ? progres || "Mengenkripsi dan menyimpan..."
                 : !banyak && terunggah[0]
                   ? "Pilih berkas lain untuk mengganti"
                   : "Tarik berkas ke sini atau pilih berkas"}
@@ -147,6 +154,9 @@ export default function FileDropzone({
           </div>
         )}
         {error && <p className="text-xs text-error">{error}</p>}
+        {sibuk && progres && terunggah.length > 0 && (
+          <p className="text-xs text-muted">{progres}</p>
+        )}
 
         {terunggah.length > 0 && (
           <ul className="flex flex-col gap-1">
@@ -157,21 +167,50 @@ export default function FileDropzone({
               >
                 <span className="min-w-0 flex-1 truncate">
                   {b.nama_asli} ({formatUkuran(b.ukuran_byte)})
+                  {b.status === "mengunggah" && (
+                    <span className="text-error"> belum selesai</span>
+                  )}
                 </span>
-                <span className="flex shrink-0 gap-1">
-                  {ALGORITMA.map((a) => (
-                    <span
-                      key={a}
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold text-surface ${latar[a]}`}
+                {b.status !== "mengunggah" && (
+                  <span className="flex shrink-0 gap-1">
+                    {ALGORITMA.map((a) => (
+                      <span
+                        key={a}
+                        className={`rounded px-1.5 py-0.5 text-[10px] font-bold text-surface ${latar[a]}`}
+                      >
+                        {a}
+                      </span>
+                    ))}
+                  </span>
+                )}
+                {onUnduh && b.status !== "mengunggah" && (
+                  <span className="flex shrink-0 items-center gap-1">
+                    <select
+                      aria-label={`Algoritma unduhan ${b.nama_asli}`}
+                      value={algoritma}
+                      onChange={(e) => setAlgoritma(e.target.value)}
+                      className="h-7 rounded border border-border bg-surface px-1 text-xs"
                     >
-                      {a}
-                    </span>
-                  ))}
-                </span>
+                      {ALGORITMA.map((a) => (
+                        <option key={a}>{a}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      disabled={sibuk}
+                      onClick={() =>
+                        jalankan(() => onUnduh(b, algoritma, setProgres))
+                      }
+                      className="h-7 rounded bg-brand px-2 font-semibold text-surface disabled:opacity-60"
+                    >
+                      Unduh
+                    </button>
+                  </span>
+                )}
                 <button
                   type="button"
                   disabled={sibuk}
-                  onClick={() => hapus(b)}
+                  onClick={() => jalankan(() => onHapus?.(b))}
                   aria-label={`Hapus ${b.nama_asli}`}
                   className="shrink-0 text-error disabled:opacity-60"
                 >
