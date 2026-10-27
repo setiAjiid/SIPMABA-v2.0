@@ -1,9 +1,18 @@
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { ambilToken } from "../lib/api";
+import { cekSession } from "../lib/api";
 
-// Halaman masuk dan daftar tidak perlu dibuka lagi oleh pengguna yang
-// sudah masuk.
 export default function RuteTamu({ children }) {
-  if (ambilToken()) return <Navigate to="/beranda" replace />;
+  const [statusAutentikasi, setStatusAutentikasi] = useState(null);
+
+  useEffect(() => {
+    cekSession().then((isValid) => setStatusAutentikasi(isValid));
+  }, []);
+
+  if (statusAutentikasi === null) {
+    return <div className="flex h-screen items-center justify-center">Memeriksa sesi...</div>;
+  }
+
+  if (statusAutentikasi) return <Navigate to="/beranda" replace />;
   return children;
 }
