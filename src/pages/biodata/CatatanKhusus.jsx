@@ -1,6 +1,7 @@
 import FormKolom from "../../components/FormKolom";
 import KartuBerkas from "../../components/KartuBerkas";
 import { yaTidak } from "../../lib/biodata";
+import { hapusBerkas, unggahBerkas, useDaftarBerkas } from "../../lib/berkas";
 
 const transportasi = [
   "Kendaraan umum",
@@ -10,12 +11,40 @@ const transportasi = [
 ];
 
 const berkas = [
-  { id: "ijazah", label: "Ijazah / Surat Keterangan Lulus" },
-  { id: "kk", label: "Kartu Keluarga" },
-  { id: "akta", label: "Akta Kelahiran" },
-  { id: "ktp", label: "KTP" },
-  { id: "bpjs", label: "BPJS / asuransi kesehatan", optional: true },
+  { kode: "ijazah_skl", label: "Ijazah / Surat Keterangan Lulus" },
+  { kode: "kartu_keluarga", label: "Kartu Keluarga" },
+  { kode: "akta_kelahiran", label: "Akta Kelahiran" },
+  { kode: "ktp", label: "KTP" },
+  { kode: "bpjs", label: "BPJS / asuransi kesehatan", optional: true },
 ];
+
+// Kartu Keluarga dan Akta Kelahiran memakai kode yang sama dengan halaman
+// Berkas, jadi unggahan di salah satu tempat terlihat di tempat lain.
+function BerkasDokumen() {
+  const [daftar, muatUlang] = useDaftarBerkas();
+  const cari = (kode) => daftar?.berkas.find((x) => x.kode_berkas === kode);
+
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      {berkas.map((b) => (
+        <KartuBerkas
+          key={b.kode}
+          label={b.label}
+          wajib={!b.optional}
+          berkas={cari(b.kode)}
+          onUnggah={async (file) => {
+            await unggahBerkas(b.kode, file);
+            muatUlang();
+          }}
+          onHapus={async (x) => {
+            await hapusBerkas(x.id);
+            muatUlang();
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 const bagian = [
   {
@@ -97,11 +126,7 @@ const bagian = [
             <span className="text-xs text-muted">Wajib diisi</span>
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          {berkas.map((b) => (
-            <KartuBerkas key={b.id} label={b.label} wajib={!b.optional} />
-          ))}
-        </div>
+        <BerkasDokumen />
       </>
     ),
   },
