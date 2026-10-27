@@ -24,7 +24,7 @@ const lingkar = [192, 320, 448, 576, 704, 832];
 export default function AuthLayout({ children, tanpaTab = false }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[648fr_792fr]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-b from-brand to-[#0b2c5c] px-20 py-14 text-surface lg:flex">
+      <aside className="relative hidden flex-col overflow-hidden bg-gradient-to-b from-brand to-[#0b2c5c] px-20 py-14 text-surface lg:flex">
         {/* dekorasi */}
         <div
           aria-hidden
@@ -83,7 +83,7 @@ export default function AuthLayout({ children, tanpaTab = false }) {
           SIPMABA
         </span>
 
-        <div className="relative flex max-w-[488px] flex-col gap-5">
+        <div className="relative mt-[124px] flex max-w-[488px] flex-col gap-5">
           <div className="h-px w-12 bg-[#c9a96a]" />
           <span className="text-xs font-semibold tracking-[0.22em] text-surface/60">
             KEAMANAN DATA MAHASISWA
@@ -97,7 +97,7 @@ export default function AuthLayout({ children, tanpaTab = false }) {
           </p>
         </div>
 
-        <p className="relative max-w-[488px] border-t border-surface/15 pt-6 text-xs leading-[18px] text-surface/60">
+        <p className="relative mt-auto max-w-[488px] border-t border-surface/15 pt-6 text-xs leading-[18px] text-surface/60">
           Sistem Informasi Penerimaan Mahasiswa Baru
           <br />
           Institut Teknologi Sepuluh Nopember
