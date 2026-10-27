@@ -6,7 +6,7 @@ import Select from "./Select";
 const ratakan = (kolom) => kolom.flatMap((k) => k.anak ?? [k]);
 
 export default function FormKolom({ bagian, children }) {
-  const semuaKolom = bagian.flatMap((b) => ratakan(b.kolom));
+  const semuaKolom = bagian.flatMap((b) => ratakan(b.kolom ?? []));
   const [form, setForm] = useState(() =>
     Object.fromEntries(
       semuaKolom.map((k) => [k.nama, k.jenis === "centang" ? [] : ""]),
@@ -169,7 +169,8 @@ export default function FormKolom({ bagian, children }) {
               <p className="text-xs font-semibold text-muted">{b.keterangan}</p>
             )}
             <div className="mt-6 flex flex-col gap-6">
-              {b.kolom.map((k) => (
+              {b.kustom}
+              {(b.kolom ?? []).map((k) => (
                 <div
                   key={k.nama}
                   className="grid gap-2 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8"

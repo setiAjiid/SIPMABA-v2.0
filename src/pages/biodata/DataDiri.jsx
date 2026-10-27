@@ -1,4 +1,5 @@
 import FormKolom from "../../components/FormKolom";
+import FotoProfil from "../../components/FotoProfil";
 import { wilayah } from "../../data/wilayah";
 
 const negara = ["Indonesia"];
@@ -6,6 +7,7 @@ const provinsi = Object.keys(wilayah);
 const kotaDari = (nama) => (f) => wilayah[f[nama]] ?? [];
 
 const bagian = [
+  { judul: "Foto", kustom: <FotoProfil /> },
   {
     judul: "Identitas",
     kolom: [
