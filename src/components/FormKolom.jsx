@@ -11,7 +11,13 @@ export default function FormKolom({ bagian, children }) {
   const [errors, setErrors] = useState({});
 
   function ubah(nama, nilai) {
-    setForm((lama) => ({ ...lama, [nama]: nilai }));
+    setForm((lama) => {
+      const baru = { ...lama, [nama]: nilai };
+      for (const k of semuaKolom) {
+        if (k.bergantung === nama) baru[k.nama] = "";
+      }
+      return baru;
+    });
   }
 
   function simpan(e) {
@@ -47,7 +53,12 @@ export default function FormKolom({ bagian, children }) {
                 <Select
                   key={k.nama}
                   label={k.label}
-                  options={k.pilihan}
+                  options={
+                    typeof k.pilihan === "function"
+                      ? k.pilihan(form)
+                      : k.pilihan
+                  }
+                  disabled={k.bergantung ? !form[k.bergantung] : false}
                   value={form[k.nama]}
                   onChange={(e) => ubah(k.nama, e.target.value)}
                   error={errors[k.nama]}

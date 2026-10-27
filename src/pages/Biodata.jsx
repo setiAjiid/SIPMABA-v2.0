@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CatatanKhusus from "./biodata/CatatanKhusus";
 import DataDiri from "./biodata/DataDiri";
+import Keluarga from "./biodata/Keluarga";
 import Pendidikan from "./biodata/Pendidikan";
 import Pendukung from "./biodata/Pendukung";
 import Rumah from "./biodata/Rumah";
@@ -17,6 +18,7 @@ const tabs = [
 const isi = {
   "data-diri": DataDiri,
   pendidikan: Pendidikan,
+  keluarga: Keluarga,
   rumah: Rumah,
   "catatan-khusus": CatatanKhusus,
   pendukung: Pendukung,
