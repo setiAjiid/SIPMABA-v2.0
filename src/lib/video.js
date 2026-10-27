@@ -1,11 +1,11 @@
 import { panggil } from "./api";
 import { bacaBase64 } from "./berkas";
 
-// Video dikirim per potongan (ukurannya ditentukan server, 256 KB) karena
+// Video dikirim per potongan (ukurannya ditentukan server, 512 KB) karena
 // satu amplop enkripsi in-transit maksimal 1 MiB. Setiap potongan
 // dienkripsi server dengan AES, DES, dan RC4.
 export async function unggahVideo(file, lapor) {
-  const potonganAwal = 256 * 1024;
+  const potonganAwal = 512 * 1024;
   const jumlah = Math.ceil(file.size / potonganAwal);
   const mulai = await panggil("/videos", {
     method: "POST",

@@ -1,12 +1,10 @@
 import { panggil } from "./api";
 import { bacaBase64 } from "./berkas";
 
-const UKURAN_POTONGAN = 256 * 1024;
+const UKURAN_POTONGAN = 512 * 1024;
 
-// Dokumen dikirim per potongan 256 KB.
+// Dokumen dikirim per potongan 512 KB.
 export async function unggahDokumen(file, lapor) {
-  const jumlah = Math.ceil(file.size / UKURAN_POTONGAN);
-
   const mulai = await panggil("/documents", {
     method: "POST",
     body: {
@@ -16,6 +14,7 @@ export async function unggahDokumen(file, lapor) {
   });
 
   const ukuran = mulai.chunk_bytes ?? UKURAN_POTONGAN;
+  const jumlah = mulai.chunk_count ?? Math.ceil(file.size / ukuran);
 
   for (let i = 0; i < jumlah; i++) {
     lapor?.(`Mengunggah ${Math.round((i / jumlah) * 100)}%`);
@@ -55,9 +54,9 @@ export async function unduhDokumen(dokumen, algoritma = "AES", lapor) {
 
   lapor?.("");
 
-  const nama = metadata.filename || dokumen.filename || "dokumen";
+  const nama = metadata.filename || dokumen.nama_asli || "dokumen";
   const tipe =
-    metadata.content_type || dokumen.content_type || "application/octet-stream";
+    metadata.content_type || dokumen.tipe_mime || "application/octet-stream";
 
   const url = URL.createObjectURL(new Blob(bagian, { type: tipe }));
 
