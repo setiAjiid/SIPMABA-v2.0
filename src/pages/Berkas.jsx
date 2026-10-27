@@ -37,19 +37,20 @@ export default function Berkas() {
     const terunggah = semua.filter((x) =>
       banyak ? x.kode_berkas.startsWith(b.kode) : x.kode_berkas === b.kode,
     );
+    const slotTerpakai = new Set(terunggah.map((x) => x.kode_berkas));
     return {
       terunggah,
       tidakTersedia: b.tidakTersedia,
       onUnggah: async (file) => {
         let kode = b.kode;
         if (banyak) {
-          const terpakai = new Set(terunggah.map((x) => x.kode_berkas));
           const slot = Array.from({ length: b.jumlah }, (_, i) => i + 1).find(
-            (n) => !terpakai.has(`${b.kode}${n}`),
+            (n) => !slotTerpakai.has(`${b.kode}${n}`),
           );
           kode = `${b.kode}${slot}`;
-          terpakai.add(kode);
-          terunggah.push({ kode_berkas: kode });
+          // Dicatat di sini (bukan di array yang ditampilkan) supaya
+          // unggahan berikutnya dalam satu pilihan memakai slot lain.
+          slotTerpakai.add(kode);
         }
         await kirimBerkas(kode, file);
         muatUlang();
