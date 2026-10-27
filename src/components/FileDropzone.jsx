@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 
 export default function FileDropzone({
   label,
@@ -8,27 +8,47 @@ export default function FileDropzone({
   accept = ["image/jpeg", "image/png"],
   minKB = 200,
   maxKB = 500,
+  jumlah = 1,
   onChange,
 }) {
   const inputRef = useRef(null);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
+  const banyak = jumlah > 1;
 
-  function pilih(f) {
-    if (!f) return;
-    const kb = f.size / 1024;
-    if (!accept.includes(f.type)) {
-      setError("Format berkas tidak sesuai");
-      return;
+  function pilih(daftar) {
+    const baru = Array.from(daftar ?? []);
+    if (baru.length === 0) return;
+    const tujuan = banyak ? baru : baru.slice(0, 1);
+
+    for (const f of tujuan) {
+      const kb = f.size / 1024;
+      const sebut = banyak ? ` (${f.name})` : "";
+      if (!accept.includes(f.type)) {
+        setError(`Format berkas tidak sesuai${sebut}`);
+        return;
+      }
+      if (kb < minKB || kb > maxKB) {
+        setError(`Ukuran berkas harus ${minKB} sampai ${maxKB} KB${sebut}`);
+        return;
+      }
     }
-    if (kb < minKB || kb > maxKB) {
-      setError(`Ukuran berkas harus ${minKB} sampai ${maxKB} KB`);
+
+    const gabung = banyak ? [...files, ...tujuan] : tujuan;
+    if (gabung.length > jumlah) {
+      setError(`Maksimal ${jumlah} berkas`);
       return;
     }
     setError("");
-    setFile(f);
-    onChange?.(f);
+    setFiles(gabung);
+    onChange?.(banyak ? gabung : gabung[0]);
+  }
+
+  function hapus(indeks) {
+    const sisa = files.filter((_, i) => i !== indeks);
+    setFiles(sisa);
+    onChange?.(sisa);
   }
 
   return (
@@ -51,7 +71,7 @@ export default function FileDropzone({
           onDrop={(e) => {
             e.preventDefault();
             setDragging(false);
-            pilih(e.dataTransfer.files[0]);
+            pilih(e.dataTransfer.files);
           }}
           className={`flex flex-col items-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center ${
             error
@@ -63,8 +83,8 @@ export default function FileDropzone({
         >
           <Upload size={18} className="text-brand" />
           <p className="text-sm font-semibold text-ink">
-            {file
-              ? `${file.name} (${Math.round(file.size / 1024)} KB)`
+            {!banyak && files[0]
+              ? `${files[0].name} (${Math.round(files[0].size / 1024)} KB)`
               : "Tarik berkas ke sini atau pilih berkas"}
           </p>
           <button
@@ -77,15 +97,46 @@ export default function FileDropzone({
           <input
             ref={inputRef}
             type="file"
+            multiple={banyak}
             accept={accept.join(",")}
             className="hidden"
             onChange={(e) => {
-              pilih(e.target.files[0]);
+              pilih(e.target.files);
               e.target.value = "";
             }}
           />
         </div>
         {error && <p className="text-xs text-error">{error}</p>}
+
+        {banyak && (
+          <>
+            {files.length > 0 && (
+              <ul className="flex flex-col gap-1">
+                {files.map((f, i) => (
+                  <li
+                    key={`${f.name}-${i}`}
+                    className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-xs text-ink"
+                  >
+                    <span className="truncate">
+                      {f.name} ({Math.round(f.size / 1024)} KB)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => hapus(i)}
+                      aria-label={`Hapus ${f.name}`}
+                      className="ml-3 shrink-0 text-error"
+                    >
+                      <X size={14} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="text-xs font-semibold text-muted">
+              {files.length} dari {jumlah} berkas
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

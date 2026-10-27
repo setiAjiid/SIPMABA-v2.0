@@ -4,7 +4,7 @@ const geotag = `${gaya}, wajib geotag`;
 
 export const daftarUlang = [
   { id: "kipk", label: "Foto KIP-K / SKTM", hint: gaya, optional: true },
-  { id: "rapor", label: "Rapor semester 1 sampai 7", hint: gaya },
+  { id: "rapor", label: "Rapor semester 1 sampai 7", hint: gaya, jumlah: 7 },
   {
     id: "surat-biaya",
     label: "Surat Pernyataan Tidak Menarik Biaya Pendidikan",

@@ -41,6 +41,7 @@ export default function Berkas() {
                 label={b.label}
                 hint={b.hint}
                 optional={b.optional}
+                jumlah={b.jumlah}
               />
             ))}
           </div>
