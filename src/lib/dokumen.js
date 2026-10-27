@@ -69,3 +69,14 @@ export async function unduhDokumen(dokumen, algoritma = "AES", lapor) {
 
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// Pratinjau ciphertext potongan pertama (berkas disimpan per potongan).
+export async function ambilCiphertextDokumen(berkas, algoritma) {
+  const res = await panggil(
+    `/documents/${berkas.id}/chunks/0/ciphertext?algoritma=${algoritma}`,
+  );
+  return {
+    isi: res.ciphertext,
+    keterangan: `potongan 1 dari ${res.chunk_count}`,
+  };
+}

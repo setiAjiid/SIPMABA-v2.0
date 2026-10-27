@@ -13,7 +13,8 @@ const latar = {
 // boleh melempar galat; pesannya ditampilkan di bawah kotak. lapor(teks)
 // untuk progres. onUnduh(berkas, algoritma, lapor) opsional, menampilkan
 // tombol unduh dengan pilihan algoritma. onCiphertext(berkas, algoritma)
-// opsional, mengembalikan ciphertext base64 untuk ditampilkan.
+// opsional, mengembalikan ciphertext base64 untuk ditampilkan, atau
+// { isi, keterangan } untuk berkas yang disimpan per potongan.
 export default function FileDropzone({
   label,
   hint,
@@ -220,13 +221,15 @@ export default function FileDropzone({
                           ciphertext?.id === b.id &&
                           ciphertext.algoritma === algoritma
                             ? setCiphertext(null)
-                            : jalankan(async () =>
+                            : jalankan(async () => {
+                                const hasil = await onCiphertext(b, algoritma);
                                 setCiphertext({
                                   id: b.id,
                                   algoritma,
-                                  isi: await onCiphertext(b, algoritma),
-                                }),
-                              )
+                                  isi: hasil.isi ?? hasil,
+                                  keterangan: hasil.keterangan,
+                                });
+                              })
                         }
                         className="h-7 rounded border border-border px-2 font-semibold text-brand disabled:opacity-60"
                       >
@@ -252,7 +255,8 @@ export default function FileDropzone({
           <div className="flex flex-col gap-1">
             <p className="text-xs text-muted">
               Ciphertext {ciphertext.algoritma} (base64,{" "}
-              {ciphertext.isi.length.toLocaleString("id-ID")} karakter)
+              {ciphertext.isi.length.toLocaleString("id-ID")} karakter
+              {ciphertext.keterangan && `, ${ciphertext.keterangan}`})
             </p>
             <pre className="max-h-32 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-background p-3 font-mono text-[11px] leading-4 text-ink">
               {ciphertext.isi.slice(0, 600)}

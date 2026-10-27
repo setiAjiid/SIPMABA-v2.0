@@ -49,3 +49,14 @@ export async function unduhVideo(berkas, algoritma, lapor) {
   tautan.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// Pratinjau ciphertext potongan pertama (berkas disimpan per potongan).
+export async function ambilCiphertextVideo(berkas, algoritma) {
+  const res = await panggil(
+    `/videos/${berkas.id}/chunks/0/ciphertext?algoritma=${algoritma}`,
+  );
+  return {
+    isi: res.ciphertext,
+    keterangan: `potongan 1 dari ${res.chunk_count}`,
+  };
+}
