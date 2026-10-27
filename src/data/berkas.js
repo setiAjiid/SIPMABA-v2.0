@@ -1,4 +1,4 @@
-const gaya = "JPG/PNG, 200 sampai 500 KB";
+const gaya = "JPG/PNG, maks 500 KB";
 const meterai = `${gaya}, bermeterai Rp10.000, setiap surat memakai meterai berbeda`;
 const geotag = `${gaya}, wajib geotag`;
 

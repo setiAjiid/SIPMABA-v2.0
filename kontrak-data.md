@@ -193,7 +193,7 @@ Semua nilai uang bertipe `int` dalam rupiah.
 
 ## 6. Berkas
 
-Aturan umum: JPG atau PNG, 200 sampai 500 KB, kecuali disebutkan lain. Data yang disimpan untuk tiap berkas: `kode_berkas`, `nama_asli`, `ukuran_byte`, `tipe_mime`, `status` (`mengunggah` atau `terunggah`), `diunggah_pada`, dan hasil enkripsi untuk tiap algoritma.
+Aturan umum: JPG atau PNG, maksimal 500 KB (tanpa batas minimum), kecuali disebutkan lain. Data yang disimpan untuk tiap berkas: `kode_berkas`, `nama_asli`, `ukuran_byte`, `tipe_mime`, `status` (`mengunggah` atau `terunggah`), `diunggah_pada`, dan hasil enkripsi untuk tiap algoritma.
 
 ### 6.1 Berkas Daftar Ulang
 

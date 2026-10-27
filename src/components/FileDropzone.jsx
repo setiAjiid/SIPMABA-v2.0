@@ -18,7 +18,7 @@ export default function FileDropzone({
   hint,
   optional = false,
   accept = ["image/jpeg", "image/png"],
-  minKB = 200,
+  minKB = 0,
   maxKB = 500,
   jumlah = 1,
   terunggah = [],
@@ -47,8 +47,12 @@ export default function FileDropzone({
         setError(`Format berkas tidak sesuai${sebut}`);
         return;
       }
-      if (kb < minKB || kb > maxKB) {
-        setError(`Ukuran berkas harus ${minKB} sampai ${maxKB} KB${sebut}`);
+      if (f.size === 0 || kb < minKB || kb > maxKB) {
+        setError(
+          minKB > 0
+            ? `Ukuran berkas harus ${minKB} sampai ${maxKB} KB${sebut}`
+            : `Ukuran berkas maksimal ${maxKB} KB${sebut}`,
+        );
         return;
       }
       if (
