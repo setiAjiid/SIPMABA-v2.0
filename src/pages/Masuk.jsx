@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import InputKataSandi from "../components/InputKataSandi";
@@ -50,12 +51,12 @@ export default function Masuk() {
               onChange={(e) => setKataSandi(e.target.value)}
               error={errors.kataSandi}
               aksiLabel={
-                <a
-                  href="#"
+                <Link
+                  to="/lupa-kata-sandi"
                   className="text-sm font-bold text-brand hover:underline"
                 >
                   Lupa kata sandi?
-                </a>
+                </Link>
               }
             />
           </div>

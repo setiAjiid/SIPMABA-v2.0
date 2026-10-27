@@ -21,7 +21,7 @@ b6d4 31ef 9c07 d5a8 6e2b 43f1
 
 const lingkar = [192, 320, 448, 576, 704, 832];
 
-export default function AuthLayout({ children }) {
+export default function AuthLayout({ children, tanpaTab = false }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[648fr_792fr]">
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-b from-brand to-[#0b2c5c] px-20 py-14 text-surface lg:flex">
@@ -114,14 +114,16 @@ export default function AuthLayout({ children }) {
           </div>
 
           <div className="rounded-2xl border border-border bg-surface p-10 shadow-card">
-            <nav className="mb-6 flex">
-              <NavLink to="/masuk" className={tab}>
-                Masuk
-              </NavLink>
-              <NavLink to="/daftar" className={tab}>
-                Daftar
-              </NavLink>
-            </nav>
+            {!tanpaTab && (
+              <nav className="mb-6 flex">
+                <NavLink to="/masuk" className={tab}>
+                  Masuk
+                </NavLink>
+                <NavLink to="/daftar" className={tab}>
+                  Daftar
+                </NavLink>
+              </nav>
+            )}
 
             {children}
 
