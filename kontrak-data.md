@@ -40,7 +40,7 @@ Yang sudah diterapkan:
 
 - **In-transit.** `POST /api/handshake` (X25519), kunci sesi dari HKDF-SHA256 (salt `session_id`, info `my-go-api/v3`), lalu setiap permintaan dan respons dibungkus amplop AES-128-CTR + HMAC-SHA256 berisi `version`, `session_id`, `request_id` (sekali pakai, replay ditolak 409), `direction`, `iv`, `ciphertext`, dan `tag`. Sesi berlaku 15 menit. Untuk GET, amplop dikirim di header `X-Encrypted-Envelope` (JSON amplop dalam base64). Batas body amplop 1 MiB.
 - **Berkas.** Setiap berkas dienkripsi dengan AES-256-CTR, DES-CTR, dan RC4 (kunci per berkas lewat HKDF dengan IV). Hanya ciphertext yang disimpan, beserta IV dan tag HMAC. Saat mengunduh, pengguna memilih algoritma. "Lihat ciphertext" menampilkan base64.
-- **Biodata.** Kolom data pribadi disimpan sebagai ciphertext AES-256-CTR + HMAC (serializer GORM `enkripsi`). Kunci relasi, nomor pendaftaran, dan tanggal dibiarkan polos.
+- **Biodata.** Kolom data pribadi disimpan dalam tiga versi ciphertext (AES-256-CTR, DES-CTR, RC4) dengan tag HMAC berkunci AES (serializer GORM `enkripsi`, format `enc:v2:`). `GET /api/biodata/{tab}?algoritma=` memilih versi yang didekripsi, bawaan AES. Kunci relasi, nomor pendaftaran, serta waktu dibuat dan diubah dibiarkan polos.
 - **Kunci.** Kunci berkas dan biodata ada di variabel lingkungan server (`DATABASE_SECRET_AES256` 32 karakter, `DATABASE_SECRET_DES` 8 karakter, `DATABASE_SECRET_RC4`), sama untuk semua pengguna, dan tidak pernah dikirim ke browser. Ini berbeda dari rancangan awal (kunci diturunkan dari kata sandi pengguna), yang tidak diterapkan.
 
 Batasan yang diketahui: kunci berkas juga dipakai sebagai kunci HMAC, dan DES serta RC4 sudah tidak dianggap aman. Keduanya dipakai karena diwajibkan tugas.
