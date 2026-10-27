@@ -7,6 +7,7 @@ import {
   useDaftarBerkas,
 } from "../lib/berkas";
 import { unduhVideo, unggahVideo } from "../lib/video";
+import { unduhDokumen, unggahDokumen } from "../lib/dokumen";
 import { daftarUlang, unggahBerkas } from "../data/berkas";
 
 const menu = [
@@ -48,6 +49,23 @@ export default function Berkas() {
         },
         onUnduh: (berkas, algoritma, lapor) =>
           unduhVideo(berkas, algoritma, lapor),
+        onHapus: async (berkas) => {
+          await hapusBerkas(berkas.id);
+          muatUlang();
+        },
+      };
+    } else if (b.dokumen) {
+      return {
+        terunggah,
+        tidakTersedia: b.tidakTersedia,
+        onUnggah: async (file, lapor) => {
+          const id = await unggahDokumen(file, lapor);
+
+          muatUlang();
+          return id;
+        },
+        onUnduh: (berkas, algoritma, lapor) =>
+          unduhDokumen(berkas, algoritma, lapor),
         onHapus: async (berkas) => {
           await hapusBerkas(berkas.id);
           muatUlang();
