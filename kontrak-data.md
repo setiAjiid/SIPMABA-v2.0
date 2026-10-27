@@ -246,7 +246,7 @@ Keluaran untuk tiap algoritma (AES, DES, RC4):
 | Field                    | Tipe    | Keterangan                                     |
 | ------------------------ | ------- | ---------------------------------------------- |
 | `algoritma`              | enum    | `AES`, `DES`, `RC4`.                           |
-| `mode`                   | string  | `AES-256-CBC`, `DES-CBC`, `RC4`.               |
+| `mode`                   | string  | `AES-256-CTR`, `DES-CTR`, `RC4`.               |
 | `rata_rata_ms`           | desimal | Rata-rata waktu dekripsi.                      |
 | `median_ms`              | desimal |                                                |
 | `simpangan_baku_ms`      | desimal | Dipakai untuk garis batas di grafik.           |
