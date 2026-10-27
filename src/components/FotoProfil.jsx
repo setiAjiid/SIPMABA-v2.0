@@ -1,10 +1,36 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { User } from "lucide-react";
+import { panggil } from "../lib/api";
+import { ambilIsiBerkas, unggahBerkas } from "../lib/berkas";
 
 export default function FotoProfil({ onChange }) {
   const inputRef = useRef(null);
   const [pratinjau, setPratinjau] = useState("");
   const [galat, setGalat] = useState("");
+  const [status, setStatus] = useState("");
+
+  function gantiPratinjau(url) {
+    setPratinjau((lama) => {
+      if (lama) URL.revokeObjectURL(lama);
+      return url;
+    });
+  }
+
+  // Foto yang tersimpan hanya ada dalam bentuk ciphertext, jadi untuk
+  // pratinjau server mendekripsinya (AES) lalu dikirim lewat amplop.
+  useEffect(() => {
+    let batal = false;
+    panggil("/berkas")
+      .then((res) => res.data.berkas.find((b) => b.kode_berkas === "foto"))
+      .then((foto) => foto && ambilIsiBerkas(foto.id, "AES"))
+      .then((isi) => {
+        if (!batal && isi) gantiPratinjau(URL.createObjectURL(isi.blob));
+      })
+      .catch(() => {});
+    return () => {
+      batal = true;
+    };
+  }, []);
 
   function pilih(e) {
     const berkas = e.target.files[0];
@@ -22,15 +48,28 @@ export default function FotoProfil({ onChange }) {
 
     const url = URL.createObjectURL(berkas);
     const gambar = new Image();
-    gambar.onload = () => {
+    gambar.onerror = () => {
+      URL.revokeObjectURL(url);
+      setGalat("Berkas bukan gambar yang valid");
+    };
+    gambar.onload = async () => {
       if (gambar.naturalWidth !== 400 || gambar.naturalHeight !== 400) {
         URL.revokeObjectURL(url);
         setGalat("Dimensi foto harus 400×400 px");
         return;
       }
-      setPratinjau(url);
       setGalat("");
-      onChange?.(berkas);
+      setStatus("Mengenkripsi dan menyimpan...");
+      try {
+        await unggahBerkas("foto", berkas);
+        gantiPratinjau(url);
+        setStatus("Foto tersimpan terenkripsi.");
+        onChange?.(berkas);
+      } catch (err) {
+        URL.revokeObjectURL(url);
+        setStatus("");
+        setGalat(err.message);
+      }
     };
     gambar.src = url;
   }
@@ -75,6 +114,11 @@ export default function FotoProfil({ onChange }) {
         {galat && (
           <p role="alert" className="mt-2 text-xs text-error">
             {galat}
+          </p>
+        )}
+        {status && !galat && (
+          <p role="status" className="mt-2 text-xs text-success">
+            {status}
           </p>
         )}
       </div>
