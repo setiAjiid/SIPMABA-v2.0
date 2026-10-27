@@ -75,8 +75,8 @@ export const unggahBerkas = [
     item: [
       {
         id: "dokumen-lain",
-        tidakTersedia:
-          "Belum tersedia: ukuran berkas melebihi batas pengiriman terenkripsi (1 MB).",
+        kode: "dokumen_lain",
+        dokumen: true,
         label: "Dokumen",
         hint: "PDF/DOC/XLS, maks 10 MB",
         accept: [
