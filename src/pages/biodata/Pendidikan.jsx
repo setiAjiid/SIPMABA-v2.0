@@ -86,8 +86,10 @@ export default function Pendidikan({ onTersimpan }) {
       setGalatTka("Pilih mata pelajaran terlebih dahulu");
       return;
     }
-    if (!polaNilai.test(nilaiBaru)) {
-      setGalatTka("Nilai 0 sampai 100 dengan satu angka di belakang koma");
+    // Desimal boleh ditulis dengan koma (85,5) seperti kebiasaan di Indonesia.
+    const nilai = nilaiBaru.trim().replace(",", ".");
+    if (!polaNilai.test(nilai)) {
+      setGalatTka("Nilai 0 sampai 100, paling banyak satu angka desimal (contoh 85,5)");
       return;
     }
     if (tka.some((t) => t.mapel === mapelBaru)) {
@@ -96,11 +98,12 @@ export default function Pendidikan({ onTersimpan }) {
     }
     setTka((lama) => [
       ...lama,
-      { id: crypto.randomUUID(), mapel: mapelBaru, nilai: nilaiBaru },
+      { id: crypto.randomUUID(), mapel: mapelBaru, nilai },
     ]);
     setMapelBaru("");
     setNilaiBaru("");
     setGalatTka("");
+    setErrors((lama) => ({ ...lama, tka: undefined }));
   }
 
   function hapusTka(id) {
@@ -306,7 +309,7 @@ export default function Pendidikan({ onTersimpan }) {
                           {t.mapel}
                         </td>
                         <td className="px-4 py-4 text-muted">
-                          {Number(t.nilai).toFixed(1)}
+                          {Number(t.nilai).toFixed(1).replace(".", ",")}
                         </td>
                         <td className="px-4 py-4 text-right">
                           <button
