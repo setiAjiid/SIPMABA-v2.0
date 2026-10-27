@@ -2,7 +2,9 @@ import { useState } from "react";
 import FileDropzone from "../components/FileDropzone";
 import SidebarLayout from "../layouts/SidebarLayout";
 import {
+  ambilCiphertext,
   hapusBerkas,
+  unduhBerkas,
   unggahBerkas as kirimBerkas,
   useDaftarBerkas,
 } from "../lib/berkas";
@@ -89,6 +91,9 @@ export default function Berkas() {
         await kirimBerkas(kode, file);
         muatUlang();
       },
+      onUnduh: (berkas, algoritma) => unduhBerkas(berkas.id, algoritma),
+      onCiphertext: (berkas, algoritma) =>
+        ambilCiphertext(berkas.id, algoritma),
       onHapus: async (berkas) => {
         await hapusBerkas(berkas.id);
         muatUlang();

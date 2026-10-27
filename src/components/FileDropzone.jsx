@@ -12,7 +12,8 @@ const latar = {
 // onUnggah(file, lapor) dan onHapus(berkas) dipanggil satu per satu dan
 // boleh melempar galat; pesannya ditampilkan di bawah kotak. lapor(teks)
 // untuk progres. onUnduh(berkas, algoritma, lapor) opsional, menampilkan
-// tombol unduh dengan pilihan algoritma.
+// tombol unduh dengan pilihan algoritma. onCiphertext(berkas, algoritma)
+// opsional, mengembalikan ciphertext base64 untuk ditampilkan.
 export default function FileDropzone({
   label,
   hint,
@@ -25,6 +26,7 @@ export default function FileDropzone({
   onUnggah,
   onHapus,
   onUnduh,
+  onCiphertext,
   tidakTersedia,
 }) {
   const inputRef = useRef(null);
@@ -33,6 +35,7 @@ export default function FileDropzone({
   const [sibuk, setSibuk] = useState(false);
   const [progres, setProgres] = useState("");
   const [algoritma, setAlgoritma] = useState("AES");
+  const [ciphertext, setCiphertext] = useState(null);
   const banyak = jumlah > 1;
 
   async function pilih(daftar) {
@@ -209,6 +212,27 @@ export default function FileDropzone({
                     >
                       Unduh
                     </button>
+                    {onCiphertext && (
+                      <button
+                        type="button"
+                        disabled={sibuk}
+                        onClick={() =>
+                          ciphertext?.id === b.id &&
+                          ciphertext.algoritma === algoritma
+                            ? setCiphertext(null)
+                            : jalankan(async () =>
+                                setCiphertext({
+                                  id: b.id,
+                                  algoritma,
+                                  isi: await onCiphertext(b, algoritma),
+                                }),
+                              )
+                        }
+                        className="h-7 rounded border border-border px-2 font-semibold text-brand disabled:opacity-60"
+                      >
+                        Ciphertext
+                      </button>
+                    )}
                   </span>
                 )}
                 <button
@@ -223,6 +247,18 @@ export default function FileDropzone({
               </li>
             ))}
           </ul>
+        )}
+        {ciphertext && terunggah.some((b) => b.id === ciphertext.id) && (
+          <div className="flex flex-col gap-1">
+            <p className="text-xs text-muted">
+              Ciphertext {ciphertext.algoritma} (base64,{" "}
+              {ciphertext.isi.length.toLocaleString("id-ID")} karakter)
+            </p>
+            <pre className="max-h-32 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-background p-3 font-mono text-[11px] leading-4 text-ink">
+              {ciphertext.isi.slice(0, 600)}
+              {ciphertext.isi.length > 600 && "…"}
+            </pre>
+          </div>
         )}
         {banyak && (
           <p className="text-xs font-semibold text-muted">
