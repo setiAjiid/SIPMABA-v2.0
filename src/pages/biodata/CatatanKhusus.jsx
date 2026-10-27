@@ -1,7 +1,12 @@
 import FormKolom from "../../components/FormKolom";
 import KartuBerkas from "../../components/KartuBerkas";
 import { yaTidak } from "../../lib/biodata";
-import { hapusBerkas, unggahBerkas, useDaftarBerkas } from "../../lib/berkas";
+import {
+  berkasBelumAda,
+  hapusBerkas,
+  unggahBerkas,
+  useDaftarBerkas,
+} from "../../lib/berkas";
 
 const transportasi = [
   "Kendaraan umum",
@@ -150,6 +155,13 @@ export default function CatatanKhusus({ onTersimpan }) {
       tab="catatan-khusus"
       kunci={kunci}
       onTersimpan={onTersimpan}
+      cekTambahan={async () => {
+        const wajib = berkas.filter((b) => !b.optional);
+        const kurang = await berkasBelumAda(wajib.map((b) => b.kode));
+        if (kurang.length === 0) return null;
+        const nama = wajib.filter((b) => kurang.includes(b.kode)).map((b) => b.label);
+        return `Berkas wajib belum diunggah: ${nama.join(", ")}`;
+      }}
     />
   );
 }

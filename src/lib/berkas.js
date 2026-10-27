@@ -52,6 +52,13 @@ export async function ambilCiphertext(id, algoritma) {
   return res.data.ciphertext;
 }
 
+// Mengembalikan kode yang belum punya berkas tersimpan di server.
+export async function berkasBelumAda(daftarKode) {
+  const res = await panggil("/berkas");
+  const ada = new Set(res.data.berkas.map((b) => b.kode_berkas));
+  return daftarKode.filter((kode) => !ada.has(kode));
+}
+
 export const formatUkuran = (byte) =>
   byte >= 1024 * 1024
     ? `${(byte / 1024 / 1024).toFixed(1).replace(".", ",")} MB`

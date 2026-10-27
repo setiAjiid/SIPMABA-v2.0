@@ -18,6 +18,7 @@ export default function FormKolom({
   tab,
   kunci = {},
   onTersimpan,
+  cekTambahan,
   children,
 }) {
   const semuaKolom = bagian.flatMap((b) => ratakan(b.kolom ?? []));
@@ -89,6 +90,12 @@ export default function FormKolom({
 
     setMenyimpan(true);
     try {
+      // Pemeriksaan di luar kolom form, misalnya berkas wajib.
+      const galatTambahan = await cekTambahan?.();
+      if (galatTambahan) {
+        setPesan({ jenis: "galat", teks: galatTambahan });
+        return;
+      }
       await panggil(`/biodata/${tab}`, {
         method: "PUT",
         body: keBackend(semuaKolom, kunci, form),

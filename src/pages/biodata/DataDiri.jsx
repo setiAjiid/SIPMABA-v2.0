@@ -1,5 +1,6 @@
 import FormKolom from "../../components/FormKolom";
 import FotoProfil from "../../components/FotoProfil";
+import { berkasBelumAda } from "../../lib/berkas";
 import { wilayah } from "../../data/wilayah";
 import { yaTidak } from "../../lib/biodata";
 
@@ -281,6 +282,11 @@ export default function DataDiri({ onTersimpan }) {
       tab="data-diri"
       kunci={kunci}
       onTersimpan={onTersimpan}
+      cekTambahan={async () =>
+        (await berkasBelumAda(["foto"])).length > 0
+          ? "Foto mahasiswa wajib diunggah"
+          : null
+      }
     />
   );
 }
