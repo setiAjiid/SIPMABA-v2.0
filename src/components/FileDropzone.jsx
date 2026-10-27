@@ -32,66 +32,61 @@ export default function FileDropzone({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
+    <div className="grid gap-4 rounded-xl border border-border bg-surface p-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-6">
+      <div className="flex flex-col gap-1">
         <span className="text-sm font-semibold text-ink">{label}</span>
         {optional && (
-          <span className="rounded bg-brand-soft px-2 py-0.5 text-xs text-muted">
-            Opsional
-          </span>
+          <span className="text-xs font-semibold text-muted">Opsional</span>
         )}
       </div>
-      <p className="text-xs text-muted">{hint}</p>
 
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragging(false);
-          pilih(e.dataTransfer.files[0]);
-        }}
-        className={`flex flex-col items-center gap-3 rounded-lg border border-dashed p-6 text-center ${
-          error
-            ? "border-error"
-            : dragging
-              ? "border-brand bg-brand-soft"
-              : "border-border bg-surface"
-        }`}
-      >
-        <Upload size={20} className="text-muted" />
-        {file ? (
-          <p className="text-sm text-ink">
-            {file.name} ({Math.round(file.size / 1024)} KB)
-          </p>
-        ) : (
-          <p className="text-sm text-muted">
-            Tarik berkas ke sini atau pilih berkas
-          </p>
-        )}
-        <button
-          type="button"
-          onClick={() => inputRef.current.click()}
-          className="text-sm font-semibold text-brand hover:underline"
-        >
-          Pilih berkas
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept.join(",")}
-          className="hidden"
-          onChange={(e) => {
-            pilih(e.target.files[0]);
-            e.target.value = "";
+      <div className="flex flex-col gap-2">
+        <p className="text-xs text-muted">{hint}</p>
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
           }}
-        />
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            pilih(e.dataTransfer.files[0]);
+          }}
+          className={`flex flex-col items-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center ${
+            error
+              ? "border-error bg-background"
+              : dragging
+                ? "border-brand bg-brand-soft"
+                : "border-border bg-background"
+          }`}
+        >
+          <Upload size={18} className="text-brand" />
+          <p className="text-sm font-semibold text-ink">
+            {file
+              ? `${file.name} (${Math.round(file.size / 1024)} KB)`
+              : "Tarik berkas ke sini atau pilih berkas"}
+          </p>
+          <button
+            type="button"
+            onClick={() => inputRef.current.click()}
+            className="h-9 rounded-lg border border-border bg-surface px-4 text-sm font-bold text-brand transition-colors hover:bg-brand-soft"
+          >
+            Pilih berkas
+          </button>
+          <input
+            ref={inputRef}
+            type="file"
+            accept={accept.join(",")}
+            className="hidden"
+            onChange={(e) => {
+              pilih(e.target.files[0]);
+              e.target.value = "";
+            }}
+          />
+        </div>
+        {error && <p className="text-xs text-error">{error}</p>}
       </div>
-
-      {error && <p className="text-xs text-error">{error}</p>}
     </div>
   );
 }

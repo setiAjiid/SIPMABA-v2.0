@@ -1,51 +1,55 @@
 import { useState } from "react";
 import FileDropzone from "../components/FileDropzone";
+import SidebarLayout from "../layouts/SidebarLayout";
 import { daftarUlang, unggahBerkas } from "../data/berkas";
 
-const tabBase = "rounded-md px-4 py-2 text-sm font-bold";
-const tabAktif = "bg-surface text-brand shadow-card";
-const tabTidakAktif = "text-muted";
+const menu = [
+  { id: "daftar-ulang", label: "Berkas Daftar Ulang" },
+  { id: "unggah", label: "Unggah Berkas" },
+];
+
+const teks = {
+  "daftar-ulang": {
+    judul: "Berkas Daftar Ulang",
+    keterangan:
+      "Unggah dokumen daftar ulang sesuai ketentuan pada setiap berkas.",
+  },
+  unggah: {
+    judul: "Unggah Berkas",
+    keterangan: "Unggah dokumen pendukung kondisi ekonomi dan tempat tinggal.",
+  },
+};
 
 export default function Berkas() {
-  const [tab, setTab] = useState("daftar-ulang");
+  const [aktif, setAktif] = useState("daftar-ulang");
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex w-fit gap-1 rounded-lg bg-brand-soft p-1">
-        <button
-          type="button"
-          onClick={() => setTab("daftar-ulang")}
-          className={`${tabBase} ${tab === "daftar-ulang" ? tabAktif : tabTidakAktif}`}
-        >
-          Berkas Daftar Ulang
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("unggah")}
-          className={`${tabBase} ${tab === "unggah" ? tabAktif : tabTidakAktif}`}
-        >
-          Unggah Berkas
-        </button>
-      </div>
-
-      {tab === "daftar-ulang" && (
-        <div className="grid gap-6 md:grid-cols-2">
-          {daftarUlang.map((b) => (
-            <FileDropzone
-              key={b.id}
-              label={b.label}
-              hint={b.hint}
-              optional={b.optional}
-            />
-          ))}
+    <SidebarLayout judul="BERKAS" menu={menu} aktif={aktif} onPilih={setAktif}>
+      <div className="flex max-w-[876px] flex-col gap-8">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-ink">
+            {teks[aktif].judul}
+          </h1>
+          <p className="text-sm text-muted">{teks[aktif].keterangan}</p>
         </div>
-      )}
 
-      {tab === "unggah" &&
-        unggahBerkas.map((grup) => (
-          <section key={grup.judul} className="flex flex-col gap-4">
-            <h2 className="text-lg font-bold text-ink">{grup.judul}</h2>
-            <div className="grid gap-6 md:grid-cols-2">
+        {aktif === "daftar-ulang" && (
+          <div className="flex flex-col gap-4">
+            {daftarUlang.map((b) => (
+              <FileDropzone
+                key={b.id}
+                label={b.label}
+                hint={b.hint}
+                optional={b.optional}
+              />
+            ))}
+          </div>
+        )}
+
+        {aktif === "unggah" &&
+          unggahBerkas.map((grup) => (
+            <section key={grup.judul} className="flex flex-col gap-4">
+              <h2 className="text-lg font-bold text-ink">{grup.judul}</h2>
               {grup.item.map((b) => (
                 <FileDropzone
                   key={b.id}
@@ -57,9 +61,9 @@ export default function Berkas() {
                   maxKB={b.maxKB}
                 />
               ))}
-            </div>
-          </section>
-        ))}
-    </div>
+            </section>
+          ))}
+      </div>
+    </SidebarLayout>
   );
 }

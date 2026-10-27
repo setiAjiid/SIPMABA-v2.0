@@ -29,7 +29,7 @@ export default function Biodata() {
   const Isi = isi[tab];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12">
       <h1 className="text-2xl font-bold text-ink">Biodata</h1>
       <div className="flex w-fit flex-wrap gap-1 rounded-lg bg-brand-soft p-1">
         {tabs.map((t) => (

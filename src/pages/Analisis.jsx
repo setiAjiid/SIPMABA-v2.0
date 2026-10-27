@@ -36,7 +36,7 @@ export default function Analisis() {
   const berkas = berkasTerenkripsi.find((b) => b.id === dipilih);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12">
       <section className="flex flex-col gap-3">
         <h2 className="text-xs font-semibold tracking-widest text-muted">
           BERKAS TERENKRIPSI
