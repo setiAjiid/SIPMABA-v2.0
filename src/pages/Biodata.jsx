@@ -1,3 +1,42 @@
+import { useState } from "react";
+import Pendidikan from "./biodata/Pendidikan";
+
+const tabs = [
+  { id: "data-diri", label: "Data Diri" },
+  { id: "pendidikan", label: "Pendidikan" },
+  { id: "keluarga", label: "Keluarga" },
+  { id: "rumah", label: "Rumah" },
+  { id: "catatan-khusus", label: "Catatan Khusus" },
+  { id: "pendukung", label: "Pendukung" },
+];
+
 export default function Biodata() {
-  return <h1 className="text-2xl font-bold text-ink">Biodata</h1>;
+  const [tab, setTab] = useState("pendidikan");
+
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="text-2xl font-bold text-ink">Biodata</h1>
+      <div className="flex w-fit flex-wrap gap-1 rounded-lg bg-brand-soft p-1">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`rounded-md px-4 py-2 text-sm font-bold ${
+              tab === t.id ? "bg-surface text-brand shadow-card" : "text-muted"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <section className="rounded-2xl bg-surface p-6 shadow-card">
+        {tab === "pendidikan" ? (
+          <Pendidikan />
+        ) : (
+          <p className="text-sm text-muted">Tab ini menyusul.</p>
+        )}
+      </section>
+    </div>
+  );
 }
