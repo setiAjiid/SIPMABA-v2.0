@@ -9,25 +9,34 @@ const latar = {
 };
 
 // terunggah: berkas milik kotak ini yang sudah tersimpan di server.
-// onUnggah(file) dan onHapus(berkas) dipanggil satu per satu dan boleh
-// melempar galat; pesannya ditampilkan di bawah kotak.
+// onUnggah(file, lapor) dan onHapus(berkas) dipanggil satu per satu dan
+// boleh melempar galat; pesannya ditampilkan di bawah kotak. lapor(teks)
+// untuk progres. onUnduh(berkas, algoritma, lapor) opsional, menampilkan
+// tombol unduh dengan pilihan algoritma. onCiphertext(berkas, algoritma)
+// opsional, mengembalikan ciphertext base64 untuk ditampilkan, atau
+// { isi, keterangan } untuk berkas yang disimpan per potongan.
 export default function FileDropzone({
   label,
   hint,
   optional = false,
   accept = ["image/jpeg", "image/png"],
-  minKB = 200,
+  minKB = 0,
   maxKB = 500,
   jumlah = 1,
   terunggah = [],
   onUnggah,
   onHapus,
+  onUnduh,
+  onCiphertext,
   tidakTersedia,
 }) {
   const inputRef = useRef(null);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
   const [sibuk, setSibuk] = useState(false);
+  const [progres, setProgres] = useState("");
+  const [algoritma, setAlgoritma] = useState("AES");
+  const [ciphertext, setCiphertext] = useState(null);
   const banyak = jumlah > 1;
 
   async function pilih(daftar) {
@@ -42,8 +51,12 @@ export default function FileDropzone({
         setError(`Format berkas tidak sesuai${sebut}`);
         return;
       }
-      if (kb < minKB || kb > maxKB) {
-        setError(`Ukuran berkas harus ${minKB} sampai ${maxKB} KB${sebut}`);
+      if (f.size === 0 || kb < minKB || kb > maxKB) {
+        setError(
+          minKB > 0
+            ? `Ukuran berkas harus ${minKB} sampai ${maxKB} KB${sebut}`
+            : `Ukuran berkas maksimal ${maxKB} KB${sebut}`,
+        );
         return;
       }
       if (
@@ -62,23 +75,25 @@ export default function FileDropzone({
     setError("");
     setSibuk(true);
     try {
-      for (const f of tujuan) await onUnggah?.(f);
+      for (const f of tujuan) await onUnggah?.(f, setProgres);
     } catch (err) {
       setError(err.message);
     } finally {
       setSibuk(false);
+      setProgres("");
     }
   }
 
-  async function hapus(berkas) {
+  async function jalankan(aksi) {
     setSibuk(true);
     setError("");
     try {
-      await onHapus?.(berkas);
+      await aksi();
     } catch (err) {
       setError(err.message);
     } finally {
       setSibuk(false);
+      setProgres("");
     }
   }
 
@@ -120,7 +135,7 @@ export default function FileDropzone({
             <Upload size={18} className="text-brand" />
             <p className="text-sm font-semibold text-ink">
               {sibuk
-                ? "Mengenkripsi dan menyimpan..."
+                ? progres || "Mengenkripsi dan menyimpan..."
                 : !banyak && terunggah[0]
                   ? "Pilih berkas lain untuk mengganti"
                   : "Tarik berkas ke sini atau pilih berkas"}
@@ -147,6 +162,9 @@ export default function FileDropzone({
           </div>
         )}
         {error && <p className="text-xs text-error">{error}</p>}
+        {sibuk && progres && terunggah.length > 0 && (
+          <p className="text-xs text-muted">{progres}</p>
+        )}
 
         {terunggah.length > 0 && (
           <ul className="flex flex-col gap-1">
@@ -157,21 +175,73 @@ export default function FileDropzone({
               >
                 <span className="min-w-0 flex-1 truncate">
                   {b.nama_asli} ({formatUkuran(b.ukuran_byte)})
+                  {b.status === "mengunggah" && (
+                    <span className="text-error"> belum selesai</span>
+                  )}
                 </span>
-                <span className="flex shrink-0 gap-1">
-                  {ALGORITMA.map((a) => (
-                    <span
-                      key={a}
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold text-surface ${latar[a]}`}
+                {b.status !== "mengunggah" && (
+                  <span className="flex shrink-0 gap-1">
+                    {ALGORITMA.map((a) => (
+                      <span
+                        key={a}
+                        className={`rounded px-1.5 py-0.5 text-[10px] font-bold text-surface ${latar[a]}`}
+                      >
+                        {a}
+                      </span>
+                    ))}
+                  </span>
+                )}
+                {onUnduh && b.status !== "mengunggah" && (
+                  <span className="flex shrink-0 items-center gap-1">
+                    <select
+                      aria-label={`Algoritma unduhan ${b.nama_asli}`}
+                      value={algoritma}
+                      onChange={(e) => setAlgoritma(e.target.value)}
+                      className="h-7 rounded border border-border bg-surface px-1 text-xs"
                     >
-                      {a}
-                    </span>
-                  ))}
-                </span>
+                      {ALGORITMA.map((a) => (
+                        <option key={a}>{a}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      disabled={sibuk}
+                      onClick={() =>
+                        jalankan(() => onUnduh(b, algoritma, setProgres))
+                      }
+                      className="h-7 rounded bg-brand px-2 font-semibold text-surface disabled:opacity-60"
+                    >
+                      Unduh
+                    </button>
+                    {onCiphertext && (
+                      <button
+                        type="button"
+                        disabled={sibuk}
+                        onClick={() =>
+                          ciphertext?.id === b.id &&
+                          ciphertext.algoritma === algoritma
+                            ? setCiphertext(null)
+                            : jalankan(async () => {
+                                const hasil = await onCiphertext(b, algoritma);
+                                setCiphertext({
+                                  id: b.id,
+                                  algoritma,
+                                  isi: hasil.isi ?? hasil,
+                                  keterangan: hasil.keterangan,
+                                });
+                              })
+                        }
+                        className="h-7 rounded border border-border px-2 font-semibold text-brand disabled:opacity-60"
+                      >
+                        Ciphertext
+                      </button>
+                    )}
+                  </span>
+                )}
                 <button
                   type="button"
                   disabled={sibuk}
-                  onClick={() => hapus(b)}
+                  onClick={() => jalankan(() => onHapus?.(b))}
                   aria-label={`Hapus ${b.nama_asli}`}
                   className="shrink-0 text-error disabled:opacity-60"
                 >
@@ -180,6 +250,19 @@ export default function FileDropzone({
               </li>
             ))}
           </ul>
+        )}
+        {ciphertext && terunggah.some((b) => b.id === ciphertext.id) && (
+          <div className="flex flex-col gap-1">
+            <p className="text-xs text-muted">
+              Ciphertext {ciphertext.algoritma} (base64,{" "}
+              {ciphertext.isi.length.toLocaleString("id-ID")} karakter
+              {ciphertext.keterangan && `, ${ciphertext.keterangan}`})
+            </p>
+            <pre className="max-h-32 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-background p-3 font-mono text-[11px] leading-4 text-ink">
+              {ciphertext.isi.slice(0, 600)}
+              {ciphertext.isi.length > 600 && "…"}
+            </pre>
+          </div>
         )}
         {banyak && (
           <p className="text-xs font-semibold text-muted">

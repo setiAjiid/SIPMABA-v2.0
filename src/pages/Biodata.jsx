@@ -14,7 +14,7 @@ const tabs = [
     id: "data-diri",
     label: "Data Diri",
     keterangan:
-      "Semua isian dikirim lewat sesi terenkripsi dan disimpan terenkripsi AES-256 di server.",
+      "Semua isian dikirim lewat sesi terenkripsi dan disimpan terenkripsi AES, DES, dan RC4 di server.",
   },
   {
     id: "pendidikan",

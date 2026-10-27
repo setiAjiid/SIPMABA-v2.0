@@ -1,4 +1,4 @@
-const gaya = "JPG/PNG, 200 sampai 500 KB";
+const gaya = "JPG/PNG, maks 500 KB";
 const meterai = `${gaya}, bermeterai Rp10.000, setiap surat memakai meterai berbeda`;
 const geotag = `${gaya}, wajib geotag`;
 
@@ -75,8 +75,8 @@ export const unggahBerkas = [
     item: [
       {
         id: "dokumen-lain",
-        tidakTersedia:
-          "Belum tersedia: ukuran berkas melebihi batas pengiriman terenkripsi (1 MB).",
+        kode: "dokumen_lain",
+        dokumen: true,
         label: "Dokumen",
         hint: "PDF/DOC/XLS, maks 10 MB",
         accept: [
@@ -91,13 +91,13 @@ export const unggahBerkas = [
       },
       {
         id: "video-dokumentasi",
-        tidakTersedia:
-          "Belum tersedia: ukuran berkas melebihi batas pengiriman terenkripsi (1 MB).",
+        kode: "video_dokumentasi",
+        video: true,
         label: "Video dokumentasi",
-        hint: "MP4/WebM, maks 100 MB",
-        accept: ["video/mp4", "video/webm"],
+        hint: "MP4/WebM/MKV, maks 50 MB",
+        accept: ["video/mp4", "video/webm", "video/x-matroska"],
         minKB: 0,
-        maxKB: 100 * 1024,
+        maxKB: 50 * 1024,
       },
     ],
   },

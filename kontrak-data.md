@@ -40,7 +40,7 @@ Yang sudah diterapkan:
 
 - **In-transit.** `POST /api/handshake` (X25519), kunci sesi dari HKDF-SHA256 (salt `session_id`, info `my-go-api/v3`), lalu setiap permintaan dan respons dibungkus amplop AES-128-CTR + HMAC-SHA256 berisi `version`, `session_id`, `request_id` (sekali pakai, replay ditolak 409), `direction`, `iv`, `ciphertext`, dan `tag`. Sesi berlaku 15 menit. Untuk GET, amplop dikirim di header `X-Encrypted-Envelope` (JSON amplop dalam base64). Batas body amplop 1 MiB.
 - **Berkas.** Setiap berkas dienkripsi dengan AES-256-CTR, DES-CTR, dan RC4 (kunci per berkas lewat HKDF dengan IV). Hanya ciphertext yang disimpan, beserta IV dan tag HMAC. Saat mengunduh, pengguna memilih algoritma. "Lihat ciphertext" menampilkan base64.
-- **Biodata.** Kolom data pribadi disimpan sebagai ciphertext AES-256-CTR + HMAC (serializer GORM `enkripsi`). Kunci relasi, nomor pendaftaran, dan tanggal dibiarkan polos.
+- **Biodata.** Kolom data pribadi disimpan dalam tiga versi ciphertext (AES-256-CTR, DES-CTR, RC4) dengan tag HMAC berkunci AES (serializer GORM `enkripsi`, format `enc:v2:`). `GET /api/biodata/{tab}?algoritma=` memilih versi yang didekripsi, bawaan AES. Kunci relasi, nomor pendaftaran, serta waktu dibuat dan diubah dibiarkan polos.
 - **Kunci.** Kunci berkas dan biodata ada di variabel lingkungan server (`DATABASE_SECRET_AES256` 32 karakter, `DATABASE_SECRET_DES` 8 karakter, `DATABASE_SECRET_RC4`), sama untuk semua pengguna, dan tidak pernah dikirim ke browser. Ini berbeda dari rancangan awal (kunci diturunkan dari kata sandi pengguna), yang tidak diterapkan.
 
 Batasan yang diketahui: kunci berkas juga dipakai sebagai kunci HMAC, dan DES serta RC4 sudah tidak dianggap aman. Keduanya dipakai karena diwajibkan tugas.
@@ -193,7 +193,7 @@ Semua nilai uang bertipe `int` dalam rupiah.
 
 ## 6. Berkas
 
-Aturan umum: JPG atau PNG, 200 sampai 500 KB, kecuali disebutkan lain. Data yang disimpan untuk tiap berkas: `kode_berkas`, `nama_asli`, `ukuran_byte`, `tipe_mime`, `status` (`mengunggah` atau `terunggah`), `diunggah_pada`, dan hasil enkripsi untuk tiap algoritma.
+Aturan umum: JPG atau PNG, maksimal 500 KB (tanpa batas minimum), kecuali disebutkan lain. Data yang disimpan untuk tiap berkas: `kode_berkas`, `nama_asli`, `ukuran_byte`, `tipe_mime`, `status` (`mengunggah` atau `terunggah`), `diunggah_pada`, dan hasil enkripsi untuk tiap algoritma.
 
 ### 6.1 Berkas Daftar Ulang
 
@@ -246,7 +246,7 @@ Keluaran untuk tiap algoritma (AES, DES, RC4):
 | Field                    | Tipe    | Keterangan                                     |
 | ------------------------ | ------- | ---------------------------------------------- |
 | `algoritma`              | enum    | `AES`, `DES`, `RC4`.                           |
-| `mode`                   | string  | `AES-256-CBC`, `DES-CBC`, `RC4`.               |
+| `mode`                   | string  | `AES-256-CTR`, `DES-CTR`, `RC4`.               |
 | `rata_rata_ms`           | desimal | Rata-rata waktu dekripsi.                      |
 | `median_ms`              | desimal |                                                |
 | `simpangan_baku_ms`      | desimal | Dipakai untuk garis batas di grafik.           |
@@ -289,7 +289,7 @@ Keputusan yang sudah diambil:
 - Sumber informasi satu pilihan.
 - Nilai TKA boleh ditulis dengan koma (85,5) dan dikirim sebagai angka.
 - Kartu Keluarga dan Akta Kelahiran di Catatan Khusus dan halaman Berkas memakai kode yang sama (satu berkas).
-- Dokumen (`dokumen_lain`) dan video (`video_dokumentasi`) belum didukung; rencana batas 3 MB dan 10 MB.
+- Video (`video_dokumentasi`) MP4/WebM maks 50 MB lewat `POST /api/videos` (`chunk_count`, `size_bytes`, `nama_asli`, `tipe_mime`), dokumen (`dokumen_lain`) PDF/DOC/XLS maks 10 MB lewat `POST /api/documents` (`filename`, `size_bytes`). Potongan 512 KB lewat `PUT`/`GET /api/{videos|documents}/{id}/chunks/{index}` (`GET` dengan `?algoritma=`). Keduanya tercatat di tabel berkas dan dihapus lewat `DELETE /api/berkas/{id}`. Rute potongan punya limiter sendiri (300 per menit).
 
 ## 9. Rencana setelah tugas
 

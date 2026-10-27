@@ -2,10 +2,18 @@ import { useState } from "react";
 import FileDropzone from "../components/FileDropzone";
 import SidebarLayout from "../layouts/SidebarLayout";
 import {
+  ambilCiphertext,
   hapusBerkas,
+  unduhBerkas,
   unggahBerkas as kirimBerkas,
   useDaftarBerkas,
 } from "../lib/berkas";
+import { ambilCiphertextVideo, unduhVideo, unggahVideo } from "../lib/video";
+import {
+  ambilCiphertextDokumen,
+  unduhDokumen,
+  unggahDokumen,
+} from "../lib/dokumen";
 import { daftarUlang, unggahBerkas } from "../data/berkas";
 
 const menu = [
@@ -38,6 +46,40 @@ export default function Berkas() {
       banyak ? x.kode_berkas.startsWith(b.kode) : x.kode_berkas === b.kode,
     );
     const slotTerpakai = new Set(terunggah.map((x) => x.kode_berkas));
+    if (b.video) {
+      return {
+        terunggah,
+        onUnggah: async (file, lapor) => {
+          await unggahVideo(file, lapor);
+          muatUlang();
+        },
+        onUnduh: (berkas, algoritma, lapor) =>
+          unduhVideo(berkas, algoritma, lapor),
+        onCiphertext: ambilCiphertextVideo,
+        onHapus: async (berkas) => {
+          await hapusBerkas(berkas.id);
+          muatUlang();
+        },
+      };
+    } else if (b.dokumen) {
+      return {
+        terunggah,
+        tidakTersedia: b.tidakTersedia,
+        onUnggah: async (file, lapor) => {
+          const id = await unggahDokumen(file, lapor);
+
+          muatUlang();
+          return id;
+        },
+        onUnduh: (berkas, algoritma, lapor) =>
+          unduhDokumen(berkas, algoritma, lapor),
+        onCiphertext: ambilCiphertextDokumen,
+        onHapus: async (berkas) => {
+          await hapusBerkas(berkas.id);
+          muatUlang();
+        },
+      };
+    }
     return {
       terunggah,
       tidakTersedia: b.tidakTersedia,
@@ -55,6 +97,9 @@ export default function Berkas() {
         await kirimBerkas(kode, file);
         muatUlang();
       },
+      onUnduh: (berkas, algoritma) => unduhBerkas(berkas.id, algoritma),
+      onCiphertext: (berkas, algoritma) =>
+        ambilCiphertext(berkas.id, algoritma),
       onHapus: async (berkas) => {
         await hapusBerkas(berkas.id);
         muatUlang();

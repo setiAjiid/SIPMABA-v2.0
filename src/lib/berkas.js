@@ -3,7 +3,7 @@ import { panggil } from "./api";
 
 export const ALGORITMA = ["AES", "DES", "RC4"];
 
-function bacaBase64(file) {
+export function bacaBase64(file) {
   return new Promise((selesai, gagal) => {
     const pembaca = new FileReader();
     pembaca.onload = () => selesai(String(pembaca.result).split(",", 2)[1]);
