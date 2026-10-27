@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SidebarLayout from "../layouts/SidebarLayout";
 import CatatanKhusus from "./biodata/CatatanKhusus";
 import DataDiri from "./biodata/DataDiri";
 import Keluarga from "./biodata/Keluarga";
@@ -7,12 +8,38 @@ import Pendukung from "./biodata/Pendukung";
 import Rumah from "./biodata/Rumah";
 
 const tabs = [
-  { id: "data-diri", label: "Data Diri" },
-  { id: "pendidikan", label: "Pendidikan" },
-  { id: "keluarga", label: "Keluarga" },
-  { id: "rumah", label: "Rumah" },
-  { id: "catatan-khusus", label: "Catatan Khusus" },
-  { id: "pendukung", label: "Pendukung" },
+  {
+    id: "data-diri",
+    label: "Data Diri",
+    keterangan: "Semua isian disimpan terenkripsi dengan AES, DES, dan RC4.",
+  },
+  {
+    id: "pendidikan",
+    label: "Pendidikan",
+    keterangan:
+      "Lengkapi riwayat sekolah dan nilai TKA untuk kebutuhan seleksi.",
+  },
+  {
+    id: "keluarga",
+    label: "Keluarga",
+    keterangan: "Lengkapi data orang tua atau wali dan informasi keluarga.",
+  },
+  {
+    id: "rumah",
+    label: "Rumah",
+    keterangan: "Lengkapi informasi kondisi tempat tinggal keluarga.",
+  },
+  {
+    id: "catatan-khusus",
+    label: "Catatan Khusus",
+    keterangan:
+      "Lengkapi rencana tempat tinggal, kondisi khusus, dan dokumen pribadi.",
+  },
+  {
+    id: "pendukung",
+    label: "Pendukung",
+    keterangan: "Data kemampuan ekonomi orang tua.",
+  },
 ];
 
 const isi = {
@@ -24,34 +51,35 @@ const isi = {
   pendukung: Pendukung,
 };
 
+// sementara, nanti dari backend
+const tersimpan = {
+  "data-diri": true,
+  pendidikan: true,
+  keluarga: true,
+  rumah: true,
+};
+
 export default function Biodata() {
   const [tab, setTab] = useState("data-diri");
   const Isi = isi[tab];
+  const aktif = tabs.find((t) => t.id === tab);
+  const menu = tabs.map((t) => ({
+    id: t.id,
+    label: t.label,
+    status: !!tersimpan[t.id],
+  }));
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12">
-      <h1 className="text-2xl font-bold text-ink">Biodata</h1>
-      <div className="flex w-fit flex-wrap gap-1 rounded-lg bg-brand-soft p-1">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={`rounded-md px-4 py-2 text-sm font-bold ${
-              tab === t.id ? "bg-surface text-brand shadow-card" : "text-muted"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+    <SidebarLayout judul="BIODATA" menu={menu} aktif={tab} onPilih={setTab}>
+      <div className="flex max-w-[876px] flex-col gap-8">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-ink">
+            {aktif.label}
+          </h1>
+          <p className="text-sm text-muted">{aktif.keterangan}</p>
+        </div>
+        <Isi />
       </div>
-      <section className="rounded-2xl bg-surface p-6 shadow-card">
-        {Isi ? (
-          <Isi />
-        ) : (
-          <p className="text-sm text-muted">Tab ini menyusul.</p>
-        )}
-      </section>
-    </div>
+    </SidebarLayout>
   );
 }
