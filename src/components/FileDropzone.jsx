@@ -9,9 +9,8 @@ const latar = {
 };
 
 // terunggah: berkas milik kotak ini yang sudah tersimpan di server.
-// onUnggah(file, lapor) dan onHapus(berkas) dipanggil satu per satu dan
-// boleh melempar galat; pesannya ditampilkan di bawah kotak. lapor(teks)
-// untuk progres. onUnduh(berkas, algoritma, lapor) opsional, menampilkan
+// File yang dipilih menunggu tombol Simpan di halaman Berkas.
+// onUnduh(berkas, algoritma, lapor) opsional, menampilkan
 // tombol unduh dengan pilihan algoritma. onCiphertext(berkas, algoritma)
 // opsional, mengembalikan ciphertext base64 untuk ditampilkan, atau
 // { isi, keterangan } untuk berkas yang disimpan per potongan.
@@ -24,11 +23,13 @@ export default function FileDropzone({
   maxKB = 500,
   jumlah = 1,
   terunggah = [],
-  onUnggah,
+  tertunda = [],
+  onPilih,
   onHapus,
   onUnduh,
   onCiphertext,
   tidakTersedia,
+  menyimpan = false,
 }) {
   const inputRef = useRef(null);
   const [error, setError] = useState("");
@@ -41,8 +42,8 @@ export default function FileDropzone({
 
   async function pilih(daftar) {
     const baru = Array.from(daftar ?? []);
-    if (baru.length === 0 || sibuk || tidakTersedia) return;
-    const tujuan = banyak ? baru : baru.slice(0, 1);
+    if (baru.length === 0 || sibuk || menyimpan || tidakTersedia) return;
+    const tujuan = banyak ? [...tertunda, ...baru] : baru.slice(0, 1);
 
     for (const f of tujuan) {
       const kb = f.size / 1024;
@@ -67,24 +68,26 @@ export default function FileDropzone({
         return;
       }
     }
+    if (
+      banyak &&
+      tujuan.some((f, i) =>
+        tujuan.slice(0, i).some((lain) => lain.name === f.name && lain.size === f.size),
+      )
+    ) {
+      setError("Berkas yang sama sudah dipilih");
+      return;
+    }
     if (banyak && terunggah.length + tujuan.length > jumlah) {
       setError(`Maksimal ${jumlah} berkas`);
       return;
     }
 
     setError("");
-    setSibuk(true);
-    try {
-      for (const f of tujuan) await onUnggah?.(f, setProgres);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSibuk(false);
-      setProgres("");
-    }
+    onPilih?.(tujuan);
   }
 
   async function jalankan(aksi) {
+    if (menyimpan) return;
     setSibuk(true);
     setError("");
     try {
@@ -135,14 +138,14 @@ export default function FileDropzone({
             <Upload size={18} className="text-brand" />
             <p className="text-sm font-semibold text-ink">
               {sibuk
-                ? progres || "Mengenkripsi dan menyimpan..."
+                ? progres || "Memproses berkas..."
                 : !banyak && terunggah[0]
                   ? "Pilih berkas lain untuk mengganti"
                   : "Tarik berkas ke sini atau pilih berkas"}
             </p>
             <button
               type="button"
-              disabled={sibuk}
+              disabled={sibuk || menyimpan}
               onClick={() => inputRef.current.click()}
               className="h-9 rounded-lg border border-border bg-surface px-4 text-sm font-bold text-brand transition-colors hover:bg-brand-soft disabled:opacity-60"
             >
@@ -162,6 +165,26 @@ export default function FileDropzone({
           </div>
         )}
         {error && <p className="text-xs text-error">{error}</p>}
+        {tertunda.length > 0 && (
+          <ul className="flex flex-col gap-1">
+            {tertunda.map((f) => (
+              <li key={`${f.name}-${f.size}-${f.lastModified}`} className="flex items-center gap-2 text-xs text-ink">
+                <span className="min-w-0 flex-1 truncate">
+                  {f.name} ({formatUkuran(f.size)}) · belum disimpan
+                </span>
+                <button
+                  type="button"
+                  disabled={menyimpan}
+                  onClick={() => onPilih?.(tertunda.filter((item) => item !== f))}
+                  aria-label={`Batalkan ${f.name}`}
+                  className="text-error disabled:opacity-60"
+                >
+                  <X size={14} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         {sibuk && progres && terunggah.length > 0 && (
           <p className="text-xs text-muted">{progres}</p>
         )}
@@ -205,7 +228,7 @@ export default function FileDropzone({
                     </select>
                     <button
                       type="button"
-                      disabled={sibuk}
+                      disabled={sibuk || menyimpan}
                       onClick={() =>
                         jalankan(() => onUnduh(b, algoritma, setProgres))
                       }
@@ -216,7 +239,7 @@ export default function FileDropzone({
                     {onCiphertext && (
                       <button
                         type="button"
-                        disabled={sibuk}
+                        disabled={sibuk || menyimpan}
                         onClick={() =>
                           ciphertext?.id === b.id &&
                           ciphertext.algoritma === algoritma
@@ -240,7 +263,7 @@ export default function FileDropzone({
                 )}
                 <button
                   type="button"
-                  disabled={sibuk}
+                  disabled={sibuk || menyimpan}
                   onClick={() => jalankan(() => onHapus?.(b))}
                   aria-label={`Hapus ${b.nama_asli}`}
                   className="shrink-0 text-error disabled:opacity-60"
