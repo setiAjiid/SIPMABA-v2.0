@@ -1,6 +1,8 @@
 import FormKolom from "../../components/FormKolom";
 import FotoProfil from "../../components/FotoProfil";
+import { berkasBelumAda } from "../../lib/berkas";
 import { wilayah } from "../../data/wilayah";
+import { yaTidak } from "../../lib/biodata";
 
 const negara = ["Indonesia"];
 const provinsi = Object.keys(wilayah);
@@ -69,7 +71,10 @@ const bagian = [
         nama: "jenisKelamin",
         label: "Jenis kelamin",
         jenis: "radio",
-        pilihan: ["Laki-laki", "Perempuan"],
+        pilihan: [
+          { nilai: "laki_laki", label: "Laki-laki" },
+          { nilai: "perempuan", label: "Perempuan" },
+        ],
       },
       {
         nama: "agama",
@@ -214,19 +219,74 @@ const bagian = [
       {
         nama: "sumberInformasi",
         label: "Sumber informasi",
-        jenis: "centang",
-        pilihan: ["Website", "Media Sosial", "Teman", "Keluarga", "Sekolah"],
+        jenis: "radio",
+        pilihan: [
+          { nilai: "website", label: "Website" },
+          { nilai: "media_sosial", label: "Media Sosial" },
+          { nilai: "teman", label: "Teman" },
+          { nilai: "keluarga", label: "Keluarga" },
+          { nilai: "sekolah", label: "Sekolah" },
+        ],
       },
       {
         nama: "daftarAsrama",
         label: "Daftar asrama",
         jenis: "radio",
-        pilihan: ["Ya", "Tidak"],
+        pilihan: yaTidak,
+        boolean: true,
       },
     ],
   },
 ];
 
-export default function DataDiri() {
-  return <FormKolom bagian={bagian} />;
+const kunci = {
+  noPendaftaran: "no_pendaftaran",
+  namaIjazah: "nama_ijazah",
+  namaKtm: "nama_ktm",
+  ukuranAlmamater: "ukuran_almamater",
+  programStudi: "program_studi",
+  jalurMasuk: "jalur_masuk",
+  periodeMasuk: "periode_masuk",
+  kewarganegaraan: "kewarganegaraan",
+  nik: "nik",
+  noPaspor: "no_paspor",
+  statusPernikahan: "status_pernikahan",
+  jenisKelamin: "jenis_kelamin",
+  agama: "agama",
+  tanggalLahir: "tanggal_lahir",
+  negaraLahir: "negara_lahir",
+  provinsiLahir: "provinsi_lahir",
+  kotaLahir: "kota_lahir",
+  tempatLahirKtp: "tempat_lahir",
+  alamatKtp: "alamat_ktp",
+  negaraAsal: "negara_asal",
+  provinsiAsal: "provinsi_asal",
+  kotaAsal: "kota_asal",
+  kodePos: "kode_pos",
+  alamatDomisili: "alamat_domisili",
+  negaraDomisili: "negara_domisili",
+  provinsiDomisili: "provinsi_domisili",
+  kotaDomisili: "kota_domisili",
+  email: "email",
+  noHp: "no_hp",
+  noKipK: "no_kip_k",
+  noBpjs: "no_bpjs",
+  sumberInformasi: "sumber_informasi",
+  daftarAsrama: "daftar_asrama",
+};
+
+export default function DataDiri({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="data-diri"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+      cekTambahan={async () =>
+        (await berkasBelumAda(["foto"])).length > 0
+          ? "Foto mahasiswa wajib diunggah"
+          : null
+      }
+    />
+  );
 }

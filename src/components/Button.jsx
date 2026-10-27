@@ -11,7 +11,7 @@ export default function Button({
 }) {
   return (
     <button
-      className={`inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${variants[variant]} ${className}`}
+      className={`inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

@@ -1,7 +1,13 @@
 import FormKolom from "../../components/FormKolom";
 import KartuBerkas from "../../components/KartuBerkas";
+import { yaTidak } from "../../lib/biodata";
+import {
+  berkasBelumAda,
+  hapusBerkas,
+  unggahBerkas,
+  useDaftarBerkas,
+} from "../../lib/berkas";
 
-const yaTidak = ["Ya", "Tidak"];
 const transportasi = [
   "Kendaraan umum",
   "Kendaraan pribadi",
@@ -10,12 +16,40 @@ const transportasi = [
 ];
 
 const berkas = [
-  { id: "ijazah", label: "Ijazah / Surat Keterangan Lulus" },
-  { id: "kk", label: "Kartu Keluarga" },
-  { id: "akta", label: "Akta Kelahiran" },
-  { id: "ktp", label: "KTP" },
-  { id: "bpjs", label: "BPJS / asuransi kesehatan", optional: true },
+  { kode: "ijazah_skl", label: "Ijazah / Surat Keterangan Lulus" },
+  { kode: "kartu_keluarga", label: "Kartu Keluarga" },
+  { kode: "akta_kelahiran", label: "Akta Kelahiran" },
+  { kode: "ktp", label: "KTP" },
+  { kode: "bpjs", label: "BPJS / asuransi kesehatan", optional: true },
 ];
+
+// Kartu Keluarga dan Akta Kelahiran memakai kode yang sama dengan halaman
+// Berkas, jadi unggahan di salah satu tempat terlihat di tempat lain.
+function BerkasDokumen() {
+  const [daftar, muatUlang] = useDaftarBerkas();
+  const cari = (kode) => daftar?.berkas.find((x) => x.kode_berkas === kode);
+
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      {berkas.map((b) => (
+        <KartuBerkas
+          key={b.kode}
+          label={b.label}
+          wajib={!b.optional}
+          berkas={cari(b.kode)}
+          onUnggah={async (file) => {
+            await unggahBerkas(b.kode, file);
+            muatUlang();
+          }}
+          onHapus={async (x) => {
+            await hapusBerkas(x.id);
+            muatUlang();
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 const bagian = [
   {
@@ -32,6 +66,7 @@ const bagian = [
         label: "Ada dukungan keluarga",
         jenis: "radio",
         pilihan: yaTidak,
+        boolean: true,
       },
       {
         nama: "transportasiAsal",
@@ -66,7 +101,10 @@ const bagian = [
             label: "Rhesus",
             placeholder: "Rhesus",
             jenis: "select",
-            pilihan: ["+ (Positif)", "- (Negatif)"],
+            pilihan: [
+              { nilai: "positif", label: "+ (Positif)" },
+              { nilai: "negatif", label: "- (Negatif)" },
+            ],
           },
         ],
       },
@@ -76,6 +114,7 @@ const bagian = [
         label: "Disabilitas",
         jenis: "radio",
         pilihan: yaTidak,
+        boolean: true,
       },
     ],
   },
@@ -92,16 +131,37 @@ const bagian = [
             <span className="text-xs text-muted">Wajib diisi</span>
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          {berkas.map((b) => (
-            <KartuBerkas key={b.id} label={b.label} wajib={!b.optional} />
-          ))}
-        </div>
+        <BerkasDokumen />
       </>
     ),
   },
 ];
 
-export default function CatatanKhusus() {
-  return <FormKolom bagian={bagian} />;
+const kunci = {
+  rencanaTempatTinggal: "rencana_tempat_tinggal",
+  adaDukunganKeluarga: "ada_dukungan_keluarga",
+  transportasiAsal: "transportasi_dari_asal",
+  transportasiHarian: "transportasi_harian",
+  golonganDarah: "golongan_darah",
+  rhesus: "rhesus",
+  kondisiKesehatan: "kondisi_kesehatan",
+  disabilitas: "disabilitas",
+};
+
+export default function CatatanKhusus({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="catatan-khusus"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+      cekTambahan={async () => {
+        const wajib = berkas.filter((b) => !b.optional);
+        const kurang = await berkasBelumAda(wajib.map((b) => b.kode));
+        if (kurang.length === 0) return null;
+        const nama = wajib.filter((b) => kurang.includes(b.kode)).map((b) => b.label);
+        return `Berkas wajib belum diunggah: ${nama.join(", ")}`;
+      }}
+    />
+  );
 }

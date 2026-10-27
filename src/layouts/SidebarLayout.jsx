@@ -7,7 +7,7 @@ export default function SidebarLayout({
   children,
 }) {
   return (
-    <div className="mx-auto grid max-w-[1200px] md:grid-cols-[260px_minmax(0,1fr)]">
+    <div className="grid md:grid-cols-[260px_minmax(0,1fr)]">
       <aside className="bg-surface px-5 py-5 md:min-h-[calc(100vh-4rem)] md:border-r md:border-border">
         <p className="px-3 pb-3 text-xs font-semibold tracking-widest text-muted">
           {judul}

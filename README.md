@@ -1,16 +1,52 @@
-# React + Vite
+# SIPMABA v2.0 (frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend Sistem Informasi Penerimaan Mahasiswa Baru untuk tugas Keamanan
+Informasi. React 19 + Vite + Tailwind CSS 4. Backend ada di repo terpisah,
+[KI-Tugas-1](https://github.com/theRadn/KI-Tugas-1).
 
-Currently, two official plugins are available:
+## Menjalankan
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```
+npm install
+echo VITE_API_URL=http://localhost:8080/api > .env
+npm run dev
+```
 
-## React Compiler
+Backend harus sudah berjalan (`go run main.go` di repo KI-Tugas-1).
+`.env` diabaikan git.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Fitur
 
-## Expanding the ESLint configuration
+- **Akun:** daftar, masuk, keluar, lupa kata sandi (pesan netral, tidak
+  membocorkan email terdaftar). Halaman aplikasi hanya bisa dibuka setelah masuk.
+- **Biodata:** enam tab (Data Diri, Pendidikan, Keluarga, Rumah, Catatan
+  Khusus, Pendukung) dengan validasi, muat dan simpan per tab, serta status
+  tersimpan di sidebar dan Beranda.
+- **Berkas:** unggah gambar, daftar, hapus, unduh dengan AES, DES, atau RC4,
+  dan lihat ciphertext. Rapor menampung 7 berkas. Dokumen dan video belum
+  didukung (melebihi batas amplop 1 MiB).
+- **Analisis:** uji kecepatan dekripsi AES, DES, dan RC4 pada berkas sendiri,
+  dengan grafik, tabel statistik, dan salin sebagai tabel Markdown.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Keamanan di sisi klien
+
+- **Enkripsi in-transit** (`src/lib/transit.js`): handshake X25519, kunci sesi
+  diturunkan dengan HKDF-SHA256, lalu setiap permintaan dan respons dibungkus
+  AES-128-CTR + HMAC-SHA256 dengan `request_id` sekali pakai. Respons yang
+  gagal diverifikasi ditolak. GET mengirim amplop lewat header
+  `X-Encrypted-Envelope` karena browser tidak mengizinkan body pada GET.
+- **Pemanggil API tunggal** (`src/lib/api.js`): token JWT dan kunci sesi di
+  `sessionStorage` (hilang saat tab ditutup), sesi enkripsi diperbarui otomatis,
+  dan 401 dari token kedaluwarsa mengembalikan pengguna ke halaman masuk.
+- Validasi di browser hanya untuk kenyamanan; backend memeriksa ulang semuanya.
+
+## Struktur
+
+| Folder | Isi |
+| --- | --- |
+| `src/lib` | `api.js`, `transit.js`, `biodata.js` (konversi form ke API), `berkas.js` |
+| `src/components` | Komponen bersama (`FormKolom`, `FileDropzone`, `KartuBerkas`, ...) |
+| `src/pages` | Halaman; `src/pages/biodata` berisi konfigurasi kolom tiap tab |
+| `src/layouts` | `AuthLayout`, `AppLayout`, `SidebarLayout` |
+
+Kontrak data antara frontend dan backend ada di `kontrak-data.md`.

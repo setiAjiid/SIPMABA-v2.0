@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import SidebarLayout from "../layouts/SidebarLayout";
-import { berkasTerenkripsi, hasilContoh } from "../data/analisis";
+import { panggil } from "../lib/api";
+import { formatUkuran } from "../lib/berkas";
 
 const latar = {
   AES: "bg-algorithm-aes",
@@ -44,28 +45,84 @@ const baris = (h) => [
 
 const kartu = "rounded-xl border border-border bg-surface";
 
+const tandaSelisih = (byte) => `${byte > 0 ? "+" : ""}${byte} B`;
+
+// Bentuk respons backend diubah ke bentuk yang dipakai tabel dan grafik.
+const dariBackend = (h) => ({
+  algoritma: h.algoritma,
+  mode: h.mode,
+  rata: h.rata_rata_ms,
+  median: h.median_ms,
+  sd: h.simpangan_baku_ms,
+  min: h.min_ms,
+  maks: h.maks_ms,
+  ukuran: formatUkuran(h.ukuran_ciphertext_byte),
+  selisih: tandaSelisih(h.selisih_ukuran_byte),
+  mbps: h.mb_per_detik.toFixed(1),
+});
+
 export default function Analisis() {
-  const [dipilih, setDipilih] = useState(berkasTerenkripsi[0].id);
+  const [daftarBerkas, setDaftarBerkas] = useState(null);
+  const [dipilih, setDipilih] = useState(null);
   const [percobaan, setPercobaan] = useState("20");
   const [galat, setGalat] = useState("");
   const [hasil, setHasil] = useState(null);
+  const [menguji, setMenguji] = useState(false);
   const [tersalin, setTersalin] = useState(false);
 
-  const berkas = berkasTerenkripsi.find((b) => b.id === dipilih);
+  useEffect(() => {
+    let batal = false;
+    panggil("/analisis/berkas")
+      .then((res) => {
+        if (batal) return;
+        setDaftarBerkas(res ?? []);
+        setDipilih(res?.[0]?.id ?? null);
+      })
+      .catch((err) => {
+        if (!batal) {
+          setDaftarBerkas([]);
+          setGalat(err.message);
+        }
+      });
+    return () => {
+      batal = true;
+    };
+  }, []);
+
+  const berkas = daftarBerkas?.find((b) => b.id === dipilih);
 
   function pilihBerkas(id) {
     setDipilih(id);
     setHasil(null);
   }
 
-  function jalankan() {
-    if (!/^\d+$/.test(percobaan) || Number(percobaan) < 1) {
-      setGalat("Jumlah percobaan harus bilangan bulat minimal 1");
+  async function jalankan() {
+    const n = Number(percobaan);
+    if (!/^\d+$/.test(percobaan) || n < 1 || n > 100) {
+      setGalat("Jumlah percobaan harus bilangan bulat 1 sampai 100");
+      return;
+    }
+    if (!berkas) {
+      setGalat("Pilih berkas terenkripsi terlebih dahulu");
       return;
     }
     setGalat("");
-    // sementara memakai data contoh, nanti diganti pemanggilan backend
-    setHasil({ data: hasilContoh, berkas: berkas.nama, percobaan });
+    setMenguji(true);
+    try {
+      const res = await panggil("/analisis/uji-dekripsi", {
+        method: "POST",
+        body: { berkas_id: berkas.id, jumlah_percobaan: n },
+      });
+      setHasil({
+        data: res.hasil.map(dariBackend),
+        berkas: berkas.nama_asli,
+        percobaan,
+      });
+    } catch (err) {
+      setGalat(err.message);
+    } finally {
+      setMenguji(false);
+    }
   }
 
   async function salin() {
@@ -84,7 +141,7 @@ export default function Analisis() {
   }
 
   const skala = hasil
-    ? Math.max(...hasil.data.map((h) => h.rata + h.sd)) * 1.1
+    ? Math.max(...hasil.data.map((h) => h.rata + h.sd)) * 1.3
     : 1;
 
   const daftar = (
@@ -93,7 +150,15 @@ export default function Analisis() {
       aria-label="Berkas terenkripsi"
       className="flex flex-col gap-2"
     >
-      {berkasTerenkripsi.map((b) => {
+      {daftarBerkas === null && (
+        <p className="px-3 text-sm text-muted">Memuat...</p>
+      )}
+      {daftarBerkas?.length === 0 && (
+        <p className="px-3 text-sm text-muted">
+          Belum ada berkas terenkripsi. Unggah berkas di halaman Berkas.
+        </p>
+      )}
+      {(daftarBerkas ?? []).map((b) => {
         const aktif = dipilih === b.id;
         return (
           <button
@@ -114,9 +179,9 @@ export default function Analisis() {
               aria-hidden="true"
             />
             <span className="min-w-0">
-              <span className="block truncate text-sm">{b.nama}</span>
+              <span className="block truncate text-sm">{b.nama_asli}</span>
               <span className="block text-xs font-normal text-muted">
-                {b.ukuran}
+                {formatUkuran(b.ukuran_byte)}
               </span>
             </span>
           </button>
@@ -127,7 +192,7 @@ export default function Analisis() {
 
   return (
     <SidebarLayout judul="BERKAS TERENKRIPSI" samping={daftar}>
-      <div className="flex max-w-[876px] flex-col gap-6">
+      <div className="mx-auto flex max-w-[876px] flex-col gap-6">
         <header>
           <h1 className="text-3xl font-bold tracking-tight text-ink">
             Uji kecepatan dekripsi
@@ -148,8 +213,13 @@ export default function Analisis() {
                 error={galat}
               />
             </div>
-            <Button type="button" onClick={jalankan} className="mt-7">
-              Jalankan uji
+            <Button
+              type="button"
+              onClick={jalankan}
+              disabled={menguji}
+              className="mt-7"
+            >
+              {menguji ? "Menguji..." : "Jalankan uji"}
             </Button>
           </div>
         </section>

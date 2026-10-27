@@ -24,6 +24,7 @@ const bagian = [
         galat: "Tahun harus 4 digit",
         maks: 4,
         numerik: true,
+        bilangan: true,
       },
       {
         nama: "sumberListrik",
@@ -91,6 +92,26 @@ const bagian = [
   },
 ];
 
-export default function Rumah() {
-  return <FormKolom bagian={bagian} />;
+const kunci = {
+  kepemilikan: "kepemilikan",
+  tahunPerolehan: "tahun_perolehan",
+  sumberListrik: "sumber_listrik",
+  luasTanah: "luas_tanah",
+  luasBangunan: "luas_bangunan",
+  njop: "njop",
+  mck: "mck",
+  sumberAir: "sumber_air_minum",
+  jarakPusatKota: "jarak_pusat_kota_km",
+  jumlahPenghuni: "jumlah_penghuni",
+};
+
+export default function Rumah({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="rumah"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+    />
+  );
 }

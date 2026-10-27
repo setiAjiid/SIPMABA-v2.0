@@ -71,6 +71,26 @@ const bagian = [
   },
 ];
 
-export default function Pendukung() {
-  return <FormKolom bagian={bagian} />;
+const kunci = {
+  pekerjaanAyah: "pekerjaan_ayah",
+  pekerjaanIbu: "pekerjaan_ibu",
+  penghasilanAyah: "penghasilan_ayah",
+  penghasilanIbu: "penghasilan_ibu",
+  tanggunganAnak: "tanggungan_anak",
+  tagihanListrik: "tagihan_listrik",
+  dayaListrik: "daya_listrik",
+  pajakRodaDua: "pajak_roda_dua",
+  pajakRodaEmpat: "pajak_roda_empat",
+  totalPbb: "total_pbb",
+};
+
+export default function Pendukung({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="pendukung"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+    />
+  );
 }

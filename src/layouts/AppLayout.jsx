@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { ambilNama, hapusToken, panggil } from "../lib/api";
 
 const menu = [
   { to: "/beranda", label: "Beranda" },
@@ -8,10 +9,22 @@ const menu = [
 ];
 
 export default function AppLayout() {
+  const navigate = useNavigate();
+
+  async function keluar() {
+    try {
+      await panggil("/auth/keluar", { method: "POST" });
+    } catch {
+      /* tetap keluar walau server tidak menjawab */
+    }
+    hapusToken();
+    navigate("/masuk", { replace: true });
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="h-16 bg-brand text-surface">
-        <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-6">
+        <div className="flex h-full items-center justify-between px-6">
           <div className="flex h-full items-center gap-10">
             <span className="text-sm font-bold tracking-[0.2em]">SIPMABA</span>
             <nav className="flex h-full gap-1">
@@ -33,13 +46,14 @@ export default function AppLayout() {
             </nav>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <span className="font-semibold">Pengguna</span>
-            <NavLink
-              to="/masuk"
+            <span className="font-semibold">{ambilNama() ?? "Pengguna"}</span>
+            <button
+              type="button"
+              onClick={keluar}
               className="rounded-lg border border-surface/70 px-4 py-2 transition-colors hover:bg-surface/10"
             >
               Keluar
-            </NavLink>
+            </button>
           </div>
         </div>
       </header>

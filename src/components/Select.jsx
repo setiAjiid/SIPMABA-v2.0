@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { labelPilihan, nilaiPilihan } from "../lib/biodata";
 
 export default function Select({
   label,
@@ -25,8 +26,8 @@ export default function Select({
       >
         <option value="">{placeholder}</option>
         {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
+          <option key={nilaiPilihan(o)} value={nilaiPilihan(o)}>
+            {labelPilihan(o)}
           </option>
         ))}
       </select>

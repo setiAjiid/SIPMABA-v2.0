@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import Baris from "../../components/Baris";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import Select from "../../components/Select";
 import { wilayah } from "../../data/wilayah";
+import { panggil } from "../../lib/api";
+import { ID_KOSONG } from "../../lib/biodata";
 
 const jurusan = ["MIPA", "IPS", "Bahasa", "SMK", "Lainnya"];
 const tahun = Array.from({ length: 13 }, (_, i) => String(2015 + i));
@@ -28,13 +30,52 @@ const awal = {
   lulus: "",
 };
 
-export default function Pendidikan() {
+export default function Pendidikan({ onTersimpan }) {
   const [form, setForm] = useState(awal);
   const [errors, setErrors] = useState({});
   const [tka, setTka] = useState([]);
   const [mapelBaru, setMapelBaru] = useState("");
   const [nilaiBaru, setNilaiBaru] = useState("");
   const [galatTka, setGalatTka] = useState("");
+  const [memuat, setMemuat] = useState(true);
+  const [menyimpan, setMenyimpan] = useState(false);
+  const [pesan, setPesan] = useState(null);
+
+  useEffect(() => {
+    let batal = false;
+    panggil("/biodata/pendidikan")
+      .then((res) => {
+        const d = res?.data;
+        if (batal || !d || d.id === ID_KOSONG) return;
+        setForm({
+          provinsi: d.provinsi_sekolah ?? "",
+          kota: d.kota_sekolah ?? "",
+          sekolah: d.nama_sekolah ?? "",
+          jurusan: d.jurusan ?? "",
+          nisn: d.nisn ?? "",
+          masuk: d.tahun_masuk_smta ? String(d.tahun_masuk_smta) : "",
+          lulus: d.tahun_lulus_smta ? String(d.tahun_lulus_smta) : "",
+        });
+        setTka(
+          (d.nilai_tka ?? []).map((n) => ({
+            id: crypto.randomUUID(),
+            mapel: n.mata_pelajaran,
+            nilai: String(n.nilai),
+          })),
+        );
+      })
+      .catch((err) => {
+        // 404 berarti pengguna baru, form dibiarkan kosong.
+        if (!batal && err.status !== 404)
+          setPesan({ jenis: "galat", teks: err.message });
+      })
+      .finally(() => {
+        if (!batal) setMemuat(false);
+      });
+    return () => {
+      batal = true;
+    };
+  }, []);
 
   function ubah(nama, nilai) {
     setForm((lama) => ({ ...lama, [nama]: nilai }));
@@ -45,8 +86,10 @@ export default function Pendidikan() {
       setGalatTka("Pilih mata pelajaran terlebih dahulu");
       return;
     }
-    if (!polaNilai.test(nilaiBaru)) {
-      setGalatTka("Nilai 0 sampai 100 dengan satu angka di belakang koma");
+    // Desimal boleh ditulis dengan koma (85,5) seperti kebiasaan di Indonesia.
+    const nilai = nilaiBaru.trim().replace(",", ".");
+    if (!polaNilai.test(nilai)) {
+      setGalatTka("Nilai 0 sampai 100, paling banyak satu angka desimal (contoh 85,5)");
       return;
     }
     if (tka.some((t) => t.mapel === mapelBaru)) {
@@ -55,19 +98,21 @@ export default function Pendidikan() {
     }
     setTka((lama) => [
       ...lama,
-      { id: crypto.randomUUID(), mapel: mapelBaru, nilai: nilaiBaru },
+      { id: crypto.randomUUID(), mapel: mapelBaru, nilai },
     ]);
     setMapelBaru("");
     setNilaiBaru("");
     setGalatTka("");
+    setErrors((lama) => ({ ...lama, tka: undefined }));
   }
 
   function hapusTka(id) {
     setTka((lama) => lama.filter((t) => t.id !== id));
   }
 
-  function simpan(e) {
+  async function simpan(e) {
     e.preventDefault();
+    setPesan(null);
     const baru = {};
     if (!form.provinsi) baru.provinsi = "Provinsi wajib dipilih";
     if (!form.kota) baru.kota = "Kota wajib dipilih";
@@ -81,15 +126,40 @@ export default function Pendidikan() {
     if (form.lulus === "2026" && tka.length === 0)
       baru.tka = "Nilai TKA wajib diisi untuk lulusan 2026";
     setErrors(baru);
-    if (Object.keys(baru).length === 0) {
-      console.log("Siap disimpan", {
-        ...form,
-        nilai_tka: tka.map((t) => ({
-          mata_pelajaran: t.mapel,
-          nilai: Number(t.nilai),
-        })),
+    if (Object.keys(baru).length > 0) return;
+
+    setMenyimpan(true);
+    try {
+      await panggil("/biodata/pendidikan", {
+        method: "PUT",
+        body: {
+          provinsi_sekolah: form.provinsi,
+          kota_sekolah: form.kota,
+          nama_sekolah: form.sekolah.trim(),
+          jurusan: form.jurusan,
+          nisn: form.nisn,
+          tahun_masuk_smta: Number(form.masuk),
+          tahun_lulus_smta: Number(form.lulus),
+          nilai_tka: tka.map((t) => ({
+            mata_pelajaran: t.mapel,
+            nilai: Number(t.nilai),
+          })),
+        },
       });
+      setPesan({ jenis: "sukses", teks: "Data tersimpan." });
+      onTersimpan?.();
+    } catch (err) {
+      setPesan({
+        jenis: "galat",
+        teks: err.rinci ? `${err.message}: ${err.rinci}` : err.message,
+      });
+    } finally {
+      setMenyimpan(false);
     }
+  }
+
+  if (memuat) {
+    return <p className="text-sm text-muted">Memuat data...</p>;
   }
 
   return (
@@ -239,7 +309,7 @@ export default function Pendidikan() {
                           {t.mapel}
                         </td>
                         <td className="px-4 py-4 text-muted">
-                          {Number(t.nilai).toFixed(1)}
+                          {Number(t.nilai).toFixed(1).replace(".", ",")}
                         </td>
                         <td className="px-4 py-4 text-right">
                           <button
@@ -261,8 +331,20 @@ export default function Pendidikan() {
         </section>
       </div>
 
-      <div className="sticky bottom-0 -mx-8 flex justify-end border-t border-border bg-surface px-8 py-4">
-        <Button type="submit">Simpan</Button>
+      <div className="sticky bottom-0 -mx-8 flex items-center justify-end gap-4 border-t border-border bg-surface px-8 py-4">
+        {pesan && (
+          <p
+            role={pesan.jenis === "galat" ? "alert" : "status"}
+            className={`text-sm ${
+              pesan.jenis === "galat" ? "text-error" : "text-success"
+            }`}
+          >
+            {pesan.teks}
+          </p>
+        )}
+        <Button type="submit" disabled={menyimpan}>
+          {menyimpan ? "Menyimpan..." : "Simpan"}
+        </Button>
       </div>
     </form>
   );

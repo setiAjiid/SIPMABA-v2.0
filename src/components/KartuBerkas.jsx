@@ -1,7 +1,12 @@
 import { useRef, useState } from "react";
 import { FileText, Trash2, Upload } from "lucide-react";
+import {
+  ALGORITMA,
+  ambilCiphertext,
+  formatUkuran,
+  unduhBerkas,
+} from "../lib/berkas";
 
-const algoritma = ["AES", "DES", "RC4"];
 const latar = {
   AES: "bg-algorithm-aes",
   DES: "bg-algorithm-des",
@@ -12,16 +17,39 @@ const teks = {
   DES: "text-algorithm-des",
   RC4: "text-algorithm-rc4",
 };
+// Ciphertext bisa ratusan KB; cukup tampilkan awalnya.
+const PANJANG_PRATINJAU = 600;
 
-export default function KartuBerkas({ label, wajib = false, onChange }) {
+// berkas: data berkas dari server (atau null). onUnggah dan onHapus
+// boleh melempar galat; pesannya ditampilkan di kartu.
+export default function KartuBerkas({
+  label,
+  wajib = false,
+  berkas,
+  onUnggah,
+  onHapus,
+}) {
   const inputRef = useRef(null);
-  const [berkas, setBerkas] = useState(null);
   const [galat, setGalat] = useState("");
   const [seret, setSeret] = useState(false);
+  const [sibuk, setSibuk] = useState(false);
   const [pilihan, setPilihan] = useState("AES");
+  const [ciphertext, setCiphertext] = useState(null);
+
+  async function jalankan(aksi) {
+    setSibuk(true);
+    setGalat("");
+    try {
+      await aksi();
+    } catch (err) {
+      setGalat(err.message);
+    } finally {
+      setSibuk(false);
+    }
+  }
 
   function pilih(f) {
-    if (!f) return;
+    if (!f || sibuk) return;
     if (!["image/jpeg", "image/png"].includes(f.type)) {
       setGalat("Format berkas harus JPG atau PNG");
       return;
@@ -30,15 +58,19 @@ export default function KartuBerkas({ label, wajib = false, onChange }) {
       setGalat("Ukuran berkas maksimal 500 KB");
       return;
     }
-    setGalat("");
-    setBerkas(f);
-    onChange?.(f);
+    setCiphertext(null);
+    jalankan(() => onUnggah?.(f));
   }
 
-  function hapus() {
-    setBerkas(null);
-    setGalat("");
-    onChange?.(null);
+  function lihatCiphertext() {
+    if (ciphertext?.algoritma === pilihan) {
+      setCiphertext(null);
+      return;
+    }
+    jalankan(async () => {
+      const isi = await ambilCiphertext(berkas.id, pilihan);
+      setCiphertext({ algoritma: pilihan, isi });
+    });
   }
 
   return (
@@ -62,13 +94,13 @@ export default function KartuBerkas({ label, wajib = false, onChange }) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-ink">
-                {berkas.name}
+                {berkas.nama_asli}
               </p>
               <p className="text-xs text-muted">
-                {Math.round(berkas.size / 1024)} KB
+                {formatUkuran(berkas.ukuran_byte)}, terenkripsi
               </p>
               <div className="mt-2 flex gap-1.5">
-                {algoritma.map((a) => (
+                {ALGORITMA.map((a) => (
                   <span
                     key={a}
                     className={`rounded px-2 py-0.5 text-xs font-bold text-surface ${latar[a]}`}
@@ -80,9 +112,13 @@ export default function KartuBerkas({ label, wajib = false, onChange }) {
             </div>
             <button
               type="button"
-              onClick={hapus}
+              disabled={sibuk}
+              onClick={() => {
+                setCiphertext(null);
+                jalankan(() => onHapus?.(berkas));
+              }}
               aria-label={`Hapus berkas ${label}`}
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-error/30 bg-surface text-error"
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-error/30 bg-surface text-error disabled:opacity-60"
             >
               <Trash2 size={16} aria-hidden="true" />
             </button>
@@ -90,6 +126,7 @@ export default function KartuBerkas({ label, wajib = false, onChange }) {
         ) : (
           <button
             type="button"
+            disabled={sibuk}
             onClick={() => inputRef.current.click()}
             onDragOver={(e) => {
               e.preventDefault();
@@ -110,7 +147,7 @@ export default function KartuBerkas({ label, wajib = false, onChange }) {
             }`}
           >
             <Upload size={18} aria-hidden="true" />
-            Pilih berkas
+            {sibuk ? "Mengenkripsi dan menyimpan..." : "Pilih berkas"}
           </button>
         )}
         <input
@@ -141,7 +178,7 @@ export default function KartuBerkas({ label, wajib = false, onChange }) {
               aria-label="Algoritma unduhan"
               className="flex overflow-hidden rounded-lg border border-border"
             >
-              {algoritma.map((a) => (
+              {ALGORITMA.map((a) => (
                 <button
                   key={a}
                   type="button"
@@ -158,19 +195,35 @@ export default function KartuBerkas({ label, wajib = false, onChange }) {
             </div>
             <button
               type="button"
-              onClick={() => console.log("Unduh", label, pilihan)}
-              className="h-10 rounded-lg bg-brand px-4 text-sm font-semibold text-surface hover:bg-brand-hover"
+              disabled={sibuk}
+              onClick={() => jalankan(() => unduhBerkas(berkas.id, pilihan))}
+              className="h-10 rounded-lg bg-brand px-4 text-sm font-semibold text-surface hover:bg-brand-hover disabled:opacity-60"
             >
               Unduh
             </button>
           </div>
           <button
             type="button"
-            onClick={() => console.log("Lihat ciphertext", label, pilihan)}
-            className="h-10 w-full rounded-lg border border-border bg-surface text-sm font-semibold text-brand hover:bg-brand-soft"
+            disabled={sibuk}
+            onClick={lihatCiphertext}
+            className="h-10 w-full rounded-lg border border-border bg-surface text-sm font-semibold text-brand hover:bg-brand-soft disabled:opacity-60"
           >
-            Lihat ciphertext
+            {ciphertext?.algoritma === pilihan
+              ? "Tutup ciphertext"
+              : `Lihat ciphertext ${pilihan}`}
           </button>
+          {ciphertext && (
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-muted">
+                Ciphertext {ciphertext.algoritma} (base64,{" "}
+                {ciphertext.isi.length.toLocaleString("id-ID")} karakter)
+              </p>
+              <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-background p-3 font-mono text-[11px] leading-4 text-ink">
+                {ciphertext.isi.slice(0, PANJANG_PRATINJAU)}
+                {ciphertext.isi.length > PANJANG_PRATINJAU && "…"}
+              </pre>
+            </div>
+          )}
         </div>
       )}
     </div>
