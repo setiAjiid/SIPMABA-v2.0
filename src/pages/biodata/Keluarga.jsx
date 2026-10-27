@@ -1,24 +1,45 @@
 import FormKolom from "../../components/FormKolom";
 import { wilayah } from "../../data/wilayah";
+import { pekerjaan } from "../../data/pekerjaan";
 
 const pendidikan = ["SD", "SMP", "SMA", "D3", "S1", "S2", "S3"];
 
-function orangTua(awalan, judul, labelNama) {
+function orangTua(awalan, judul, labelNik, labelNama) {
   return {
     judul,
     kolom: [
       {
         nama: `${awalan}Nik`,
-        label: "NIK",
+        label: labelNik,
         pola: /^\d{16}$/,
         galat: "NIK harus 16 digit",
         maks: 16,
         numerik: true,
+        petunjuk: "16 digit",
       },
       { nama: `${awalan}Nama`, label: labelNama },
-      { nama: `${awalan}TempatLahir`, label: "Tempat lahir" },
-      { nama: `${awalan}TanggalLahir`, label: "Tanggal lahir", tipe: "date" },
-      { nama: `${awalan}Pekerjaan`, label: "Pekerjaan" },
+      {
+        nama: `${awalan}Kelahiran`,
+        label: "Tempat dan tanggal lahir",
+        anak: [
+          {
+            nama: `${awalan}TempatLahir`,
+            label: "Tempat lahir",
+            placeholder: "Tempat lahir",
+          },
+          {
+            nama: `${awalan}TanggalLahir`,
+            label: "Tanggal lahir",
+            tipe: "date",
+          },
+        ],
+      },
+      {
+        nama: `${awalan}Pekerjaan`,
+        label: "Pekerjaan",
+        jenis: "select",
+        pilihan: pekerjaan,
+      },
       { nama: `${awalan}Instansi`, label: "Instansi" },
       {
         nama: `${awalan}Pendidikan`,
@@ -28,14 +49,14 @@ function orangTua(awalan, judul, labelNama) {
       },
       {
         nama: `${awalan}NoHp`,
-        label: "Nomor telepon",
+        label: "No. HP",
         tipe: "tel",
         numerik: true,
       },
       {
         nama: `${awalan}Status`,
         label: "Status",
-        jenis: "select",
+        jenis: "radio",
         pilihan: ["Masih hidup", "Meninggal"],
       },
     ],
@@ -43,14 +64,14 @@ function orangTua(awalan, judul, labelNama) {
 }
 
 const bagian = [
-  orangTua("ayah", "Data ayah atau wali", "Nama ayah atau wali"),
-  orangTua("ibu", "Data ibu", "Nama ibu kandung"),
+  orangTua("ayah", "Ayah / wali", "NIK Ayah", "Nama ayah/wali"),
+  orangTua("ibu", "Ibu", "NIK Ibu", "Nama ibu kandung"),
   {
     judul: "Keluarga",
     kolom: [
       {
         nama: "rangePendapatan",
-        label: "Pendapatan orang tua per bulan",
+        label: "Range pendapatan orang tua per bulan",
         jenis: "select",
         pilihan: [
           "Kurang dari Rp1.000.000",
@@ -61,50 +82,66 @@ const bagian = [
       },
       {
         nama: "nomorKk",
-        label: "Nomor Kartu Keluarga",
+        label: "Nomor KK",
         pola: /^\d{16}$/,
         galat: "Nomor KK harus 16 digit",
         maks: 16,
         numerik: true,
+        petunjuk: "16 digit",
       },
       { nama: "jumlahKakak", label: "Jumlah kakak", angka: true },
       { nama: "jumlahAdik", label: "Jumlah adik", angka: true },
     ],
   },
   {
-    judul: "Alamat orang tua",
+    judul: "Alamat orang tua / wali",
     kolom: [
-      { nama: "alamatOrtu", label: "Alamat" },
+      { nama: "alamatOrtu", label: "Alamat", jenis: "area" },
       {
-        nama: "rt",
-        label: "RT",
-        pola: /^\d{1,3}$/,
-        galat: "RT berupa angka",
-        maks: 3,
-        numerik: true,
-      },
-      {
-        nama: "rw",
-        label: "RW",
-        pola: /^\d{1,3}$/,
-        galat: "RW berupa angka",
-        maks: 3,
-        numerik: true,
+        nama: "rtRw",
+        label: "RT / RW",
+        pemisah: "/",
+        anak: [
+          {
+            nama: "rt",
+            label: "RT",
+            pola: /^\d{1,3}$/,
+            galat: "RT berupa angka",
+            maks: 3,
+            numerik: true,
+          },
+          {
+            nama: "rw",
+            label: "RW",
+            pola: /^\d{1,3}$/,
+            galat: "RW berupa angka",
+            maks: 3,
+            numerik: true,
+          },
+        ],
       },
       { nama: "kelurahan", label: "Kelurahan" },
       { nama: "kecamatan", label: "Kecamatan" },
       {
-        nama: "provinsiOrtu",
-        label: "Provinsi",
-        jenis: "select",
-        pilihan: Object.keys(wilayah),
-      },
-      {
-        nama: "kotaOrtu",
+        nama: "wilayahOrtu",
         label: "Kota",
-        jenis: "select",
-        bergantung: "provinsiOrtu",
-        pilihan: (f) => wilayah[f.provinsiOrtu] ?? [],
+        anak: [
+          {
+            nama: "provinsiOrtu",
+            label: "Provinsi",
+            placeholder: "Provinsi",
+            jenis: "select",
+            pilihan: Object.keys(wilayah),
+          },
+          {
+            nama: "kotaOrtu",
+            label: "Kota",
+            placeholder: "Kota",
+            jenis: "select",
+            bergantung: "provinsiOrtu",
+            pilihan: (f) => wilayah[f.provinsiOrtu] ?? [],
+          },
+        ],
       },
       {
         nama: "kodePosOrtu",
@@ -116,7 +153,7 @@ const bagian = [
       },
       {
         nama: "teleponRumah",
-        label: "Nomor telepon rumah",
+        label: "No. telepon rumah",
         opsional: true,
         tipe: "tel",
         numerik: true,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Button from "./Button";
 import Input from "./Input";
 import Select from "./Select";
@@ -54,12 +54,26 @@ export default function FormKolom({ bagian, children }) {
     if (k.anak) {
       return (
         <div
-          className={`grid gap-3 ${
-            k.anak.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"
+          className={`grid items-start gap-3 ${
+            k.pemisah
+              ? "md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
+              : k.anak.length === 3
+                ? "md:grid-cols-3"
+                : "md:grid-cols-2"
           }`}
         >
-          {k.anak.map((a) => (
-            <div key={a.nama}>{kontrol(a)}</div>
+          {k.anak.map((a, i) => (
+            <Fragment key={a.nama}>
+              {k.pemisah && i === 1 && (
+                <span
+                  aria-hidden="true"
+                  className="hidden h-12 items-center text-sm text-ink md:flex"
+                >
+                  {k.pemisah}
+                </span>
+              )}
+              <div>{kontrol(a)}</div>
+            </Fragment>
           ))}
         </div>
       );

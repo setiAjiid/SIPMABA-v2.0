@@ -1,15 +1,5 @@
 import FormKolom from "../../components/FormKolom";
-
-const pekerjaan = [
-  "Pegawai Negeri Sipil",
-  "Karyawan swasta",
-  "Wiraswasta",
-  "Guru",
-  "Petani",
-  "Buruh",
-  "Tidak bekerja",
-  "Lainnya",
-];
+import { pekerjaan } from "../../data/pekerjaan";
 
 const rupiah = { angka: true, satuan: "Rp" };
 
