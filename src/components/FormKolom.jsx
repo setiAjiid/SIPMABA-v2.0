@@ -1,11 +1,19 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Button from "./Button";
 import Input from "./Input";
 import Select from "./Select";
+import { panggil } from "../lib/api";
+import {
+  ID_KOSONG,
+  dariBackend,
+  keBackend,
+  labelPilihan,
+  nilaiPilihan,
+  ratakan,
+} from "../lib/biodata";
 
-const ratakan = (kolom) => kolom.flatMap((k) => k.anak ?? [k]);
-
-export default function FormKolom({ bagian, children }) {
+// tab dan kunci opsional: tanpa keduanya form hanya memvalidasi.
+export default function FormKolom({ bagian, tab, kunci = {}, children }) {
   const semuaKolom = bagian.flatMap((b) => ratakan(b.kolom ?? []));
   const [form, setForm] = useState(() =>
     Object.fromEntries(
@@ -13,6 +21,31 @@ export default function FormKolom({ bagian, children }) {
     ),
   );
   const [errors, setErrors] = useState({});
+  const [memuat, setMemuat] = useState(Boolean(tab));
+  const [menyimpan, setMenyimpan] = useState(false);
+  const [pesan, setPesan] = useState(null);
+
+  useEffect(() => {
+    if (!tab) return;
+    let batal = false;
+    const kolom = bagian.flatMap((b) => ratakan(b.kolom ?? []));
+    panggil(`/biodata/${tab}`)
+      .then((res) => {
+        if (batal || !res?.data || res.data.id === ID_KOSONG) return;
+        setForm((lama) => ({ ...lama, ...dariBackend(kolom, kunci, res.data) }));
+      })
+      .catch((err) => {
+        // 404 berarti pengguna baru, form dibiarkan kosong.
+        if (!batal && err.status !== 404)
+          setPesan({ jenis: "galat", teks: err.message });
+      })
+      .finally(() => {
+        if (!batal) setMemuat(false);
+      });
+    return () => {
+      batal = true;
+    };
+  }, [tab, bagian, kunci]);
 
   function ubah(nama, nilai) {
     setForm((lama) => {
@@ -24,8 +57,9 @@ export default function FormKolom({ bagian, children }) {
     });
   }
 
-  function simpan(e) {
+  async function simpan(e) {
     e.preventDefault();
+    setPesan(null);
     const baru = {};
     for (const k of semuaKolom) {
       if (k.bacaSaja) continue;
@@ -45,7 +79,23 @@ export default function FormKolom({ bagian, children }) {
       }
     }
     setErrors(baru);
-    if (Object.keys(baru).length === 0) console.log("Siap disimpan", form);
+    if (Object.keys(baru).length > 0 || !tab) return;
+
+    setMenyimpan(true);
+    try {
+      await panggil(`/biodata/${tab}`, {
+        method: "PUT",
+        body: keBackend(semuaKolom, kunci, form),
+      });
+      setPesan({ jenis: "sukses", teks: "Data tersimpan." });
+    } catch (err) {
+      setPesan({
+        jenis: "galat",
+        teks: err.rinci ? `${err.message}: ${err.rinci}` : err.message,
+      });
+    } finally {
+      setMenyimpan(false);
+    }
   }
 
   function kontrol(k) {
@@ -103,28 +153,38 @@ export default function FormKolom({ bagian, children }) {
           aria-labelledby={`l-${k.nama}`}
           className="flex flex-wrap items-center gap-x-6 gap-y-2 md:min-h-12"
         >
-          {k.pilihan.map((p) => (
-            <label key={p} className="flex items-center gap-2 text-sm text-ink">
-              <input
-                type={radio ? "radio" : "checkbox"}
-                name={k.nama}
-                value={p}
-                className="size-4 accent-brand"
-                checked={radio ? form[k.nama] === p : form[k.nama].includes(p)}
-                onChange={() =>
-                  radio
-                    ? ubah(k.nama, p)
-                    : ubah(
-                        k.nama,
-                        form[k.nama].includes(p)
-                          ? form[k.nama].filter((x) => x !== p)
-                          : [...form[k.nama], p],
-                      )
-                }
-              />
-              {p}
-            </label>
-          ))}
+          {k.pilihan.map((p) => {
+            const nilai = nilaiPilihan(p);
+            return (
+              <label
+                key={nilai}
+                className="flex items-center gap-2 text-sm text-ink"
+              >
+                <input
+                  type={radio ? "radio" : "checkbox"}
+                  name={k.nama}
+                  value={nilai}
+                  className="size-4 accent-brand"
+                  checked={
+                    radio
+                      ? form[k.nama] === nilai
+                      : form[k.nama].includes(nilai)
+                  }
+                  onChange={() =>
+                    radio
+                      ? ubah(k.nama, nilai)
+                      : ubah(
+                          k.nama,
+                          form[k.nama].includes(nilai)
+                            ? form[k.nama].filter((x) => x !== nilai)
+                            : [...form[k.nama], nilai],
+                        )
+                  }
+                />
+                {labelPilihan(p)}
+              </label>
+            );
+          })}
           {errors[k.nama] && (
             <p className="basis-full text-xs text-error">{errors[k.nama]}</p>
           )}
@@ -174,6 +234,10 @@ export default function FormKolom({ bagian, children }) {
     );
   }
 
+  if (memuat) {
+    return <p className="text-sm text-muted">Memuat data...</p>;
+  }
+
   return (
     <form onSubmit={simpan} noValidate className="flex flex-col gap-6">
       <div className="divide-y divide-border rounded-xl border border-border bg-surface p-8">
@@ -216,8 +280,20 @@ export default function FormKolom({ bagian, children }) {
 
       {children}
 
-      <div className="sticky bottom-0 -mx-8 flex justify-end border-t border-border bg-surface px-8 py-4">
-        <Button type="submit">Simpan</Button>
+      <div className="sticky bottom-0 -mx-8 flex items-center justify-end gap-4 border-t border-border bg-surface px-8 py-4">
+        {pesan && (
+          <p
+            role={pesan.jenis === "galat" ? "alert" : "status"}
+            className={`text-sm ${
+              pesan.jenis === "galat" ? "text-error" : "text-success"
+            }`}
+          >
+            {pesan.teks}
+          </p>
+        )}
+        <Button type="submit" disabled={menyimpan}>
+          {menyimpan ? "Menyimpan..." : "Simpan"}
+        </Button>
       </div>
     </form>
   );

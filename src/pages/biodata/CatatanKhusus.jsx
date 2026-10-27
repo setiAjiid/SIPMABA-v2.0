@@ -1,7 +1,7 @@
 import FormKolom from "../../components/FormKolom";
 import KartuBerkas from "../../components/KartuBerkas";
+import { yaTidak } from "../../lib/biodata";
 
-const yaTidak = ["Ya", "Tidak"];
 const transportasi = [
   "Kendaraan umum",
   "Kendaraan pribadi",
@@ -32,6 +32,7 @@ const bagian = [
         label: "Ada dukungan keluarga",
         jenis: "radio",
         pilihan: yaTidak,
+        boolean: true,
       },
       {
         nama: "transportasiAsal",
@@ -66,7 +67,10 @@ const bagian = [
             label: "Rhesus",
             placeholder: "Rhesus",
             jenis: "select",
-            pilihan: ["+ (Positif)", "- (Negatif)"],
+            pilihan: [
+              { nilai: "positif", label: "+ (Positif)" },
+              { nilai: "negatif", label: "- (Negatif)" },
+            ],
           },
         ],
       },
@@ -76,6 +80,7 @@ const bagian = [
         label: "Disabilitas",
         jenis: "radio",
         pilihan: yaTidak,
+        boolean: true,
       },
     ],
   },
@@ -102,6 +107,17 @@ const bagian = [
   },
 ];
 
+const kunci = {
+  rencanaTempatTinggal: "rencana_tempat_tinggal",
+  adaDukunganKeluarga: "ada_dukungan_keluarga",
+  transportasiAsal: "transportasi_dari_asal",
+  transportasiHarian: "transportasi_harian",
+  golonganDarah: "golongan_darah",
+  rhesus: "rhesus",
+  kondisiKesehatan: "kondisi_kesehatan",
+  disabilitas: "disabilitas",
+};
+
 export default function CatatanKhusus() {
-  return <FormKolom bagian={bagian} />;
+  return <FormKolom bagian={bagian} tab="catatan-khusus" kunci={kunci} />;
 }
