@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import AppLayout from "./layouts/AppLayout";
+import RuteTerlindung from "./components/RuteTerlindung";
 import Masuk from "./pages/Masuk";
 import Daftar from "./pages/Daftar";
 import LupaKataSandi from "./pages/LupaKataSandi";
@@ -14,7 +15,13 @@ export default function App() {
       <Route path="/masuk" element={<Masuk />} />
       <Route path="/daftar" element={<Daftar />} />
       <Route path="/lupa-kata-sandi" element={<LupaKataSandi />} />
-      <Route element={<AppLayout />}>
+      <Route
+        element={
+          <RuteTerlindung>
+            <AppLayout />
+          </RuteTerlindung>
+        }
+      >
         <Route path="/beranda" element={<Beranda />} />
         <Route path="/biodata" element={<Biodata />} />
         <Route path="/berkas" element={<Berkas />} />

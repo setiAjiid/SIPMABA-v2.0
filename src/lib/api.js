@@ -1,5 +1,6 @@
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 const KUNCI = "sipmaba_token";
+const KUNCI_NAMA = "sipmaba_nama";
 
 export const ambilToken = () => {
   try {
@@ -15,9 +16,24 @@ export const simpanToken = (token) => {
     /* penyimpanan tidak tersedia */
   }
 };
+export const ambilNama = () => {
+  try {
+    return sessionStorage.getItem(KUNCI_NAMA);
+  } catch {
+    return null;
+  }
+};
+export const simpanNama = (nama) => {
+  try {
+    sessionStorage.setItem(KUNCI_NAMA, nama);
+  } catch {
+    /* penyimpanan tidak tersedia */
+  }
+};
 export const hapusToken = () => {
   try {
     sessionStorage.removeItem(KUNCI);
+    sessionStorage.removeItem(KUNCI_NAMA);
   } catch {
     /* penyimpanan tidak tersedia */
   }
@@ -51,11 +67,18 @@ export async function panggil(jalur, { method = "GET", body } = {}) {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    if (res.status === 401) hapusToken();
+    if (res.status === 401) {
+      hapusToken();
+      // Token kedaluwarsa saat memakai aplikasi: kembali ke halaman masuk.
+      if (token && !jalur.startsWith("/auth/")) {
+        window.location.replace("/masuk");
+      }
+    }
     if (res.status === 429) {
       throw new GalatApi(429, "Terlalu banyak percobaan, coba lagi sebentar");
     }
-    const pesan = data?.message ?? data?.error ?? "Terjadi kesalahan";
+    const mentah = data?.message ?? data?.error ?? "Terjadi kesalahan";
+    const pesan = mentah.charAt(0).toUpperCase() + mentah.slice(1);
     throw new GalatApi(res.status, pesan, data?.error);
   }
 

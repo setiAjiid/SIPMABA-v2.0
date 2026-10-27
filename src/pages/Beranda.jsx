@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { kelengkapan, metode } from "../data/beranda";
+import { ambilNama } from "../lib/api";
 
 const warna = {
   AES: "bg-algorithm-aes",
@@ -17,7 +18,7 @@ export default function Beranda() {
         <div className="flex flex-col gap-2 border-b border-border pb-10">
           <p className="text-sm text-muted">Beranda pendaftaran</p>
           <h1 className="text-4xl font-bold tracking-tight text-ink">
-            Halo, Pengguna
+            Halo, {ambilNama() ?? "Pengguna"}
           </h1>
           <p className="text-muted">
             Pantau kelengkapan data dan keamanan dokumen pendaftaran Anda.

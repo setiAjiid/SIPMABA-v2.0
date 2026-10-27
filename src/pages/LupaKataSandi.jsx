@@ -3,13 +3,15 @@ import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import AuthLayout from "../layouts/AuthLayout";
+import { panggil } from "../lib/api";
 
 export default function LupaKataSandi() {
   const [email, setEmail] = useState("");
   const [galat, setGalat] = useState("");
   const [terkirim, setTerkirim] = useState(false);
+  const [memuat, setMemuat] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const nilai = email.trim();
     if (!nilai) {
@@ -21,9 +23,19 @@ export default function LupaKataSandi() {
       return;
     }
     setGalat("");
-    // sementara hanya mencatat, nanti diganti pemanggilan backend
-    console.log("Kirim instruksi reset", nilai);
-    setTerkirim(true);
+    setTerkirim(false);
+    setMemuat(true);
+    try {
+      await panggil("/auth/lupa_katasandi", {
+        method: "POST",
+        body: { email: nilai },
+      });
+      setTerkirim(true);
+    } catch (err) {
+      setGalat(err.message);
+    } finally {
+      setMemuat(false);
+    }
   }
 
   return (
@@ -49,8 +61,8 @@ export default function LupaKataSandi() {
             onChange={(e) => setEmail(e.target.value)}
             error={galat}
           />
-          <Button type="submit" className="h-12 w-full">
-            Kirim instruksi reset
+          <Button type="submit" className="h-12 w-full" disabled={memuat}>
+            {memuat ? "Mengirim..." : "Kirim instruksi reset"}
           </Button>
         </form>
 
