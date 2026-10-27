@@ -289,7 +289,8 @@ Keputusan yang sudah diambil:
 - Sumber informasi satu pilihan.
 - Nilai TKA boleh ditulis dengan koma (85,5) dan dikirim sebagai angka.
 - Kartu Keluarga dan Akta Kelahiran di Catatan Khusus dan halaman Berkas memakai kode yang sama (satu berkas).
-- Dokumen (`dokumen_lain`) dan video (`video_dokumentasi`) belum didukung; rencana batas 3 MB dan 10 MB.
+- Video (`video_dokumentasi`) MP4/WebM maks 10 MB lewat `POST /api/videos` lalu `PUT`/`GET /api/videos/{id}/chunks/{index}` (potongan 256 KB, `GET` dengan `?algoritma=`); tercatat di tabel berkas dan dihapus lewat `DELETE /api/berkas/{id}`.
+- Dokumen (`dokumen_lain`) belum didukung; rencana batas 3 MB.
 
 ## 9. Rencana setelah tugas
 

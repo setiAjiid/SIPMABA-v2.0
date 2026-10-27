@@ -23,8 +23,8 @@ Backend harus sudah berjalan (`go run main.go` di repo KI-Tugas-1).
   Khusus, Pendukung) dengan validasi, muat dan simpan per tab, serta status
   tersimpan di sidebar dan Beranda.
 - **Berkas:** unggah gambar, daftar, hapus, unduh dengan AES, DES, atau RC4,
-  dan lihat ciphertext. Rapor menampung 7 berkas. Dokumen dan video belum
-  didukung (melebihi batas amplop 1 MiB).
+  dan lihat ciphertext. Rapor menampung 7 berkas. Video MP4/WebM (maks 10 MB)
+  diunggah dan diunduh per potongan 256 KB. Dokumen belum didukung.
 - **Analisis:** uji kecepatan dekripsi AES, DES, dan RC4 pada berkas sendiri,
   dengan grafik, tabel statistik, dan salin sebagai tabel Markdown.
 
