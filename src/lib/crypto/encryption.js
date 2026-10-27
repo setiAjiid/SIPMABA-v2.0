@@ -54,7 +54,7 @@ async function verifyHMACTag(session, tag, payload) {
   return crypto.subtle.verify("HMAC", session.hmacKey, tag, payload);
 }
 
-export async function createEnvelope(session, body) {
+export async function createEnvelope(session, body, onDebug) {
   const requestID = createRequestID();
   const iv = createRandomBytes(IV_LENGTH);
 
@@ -89,20 +89,34 @@ export async function createEnvelope(session, body) {
     ciphertext,
   };
 
-  const tag = await createHMACTag(session, createMacPayload(fields));
+  const tag = await createHMACTag(
+    session,
+    createMacPayload(fields),
+  );
 
-  return {
-    requestID,
-    envelope: {
-      version: VERSION,
-      session_id: session.sessionID,
-      request_id: requestID,
-      direction: "request",
-      iv: encodeBase64(iv),
-      ciphertext: encodeBase64(ciphertext),
-      tag: encodeBase64(tag),
-    },
+  const envelope = {
+    version: VERSION,
+    session_id: session.sessionID,
+    request_id: requestID,
+    direction: "request",
+    iv: encodeBase64(iv),
+    ciphertext: encodeBase64(ciphertext),
+    tag: encodeBase64(tag),
   };
+
+  onDebug?.({
+    stage: "Request encryption",
+    sessionID: session.sessionID,
+    requestID,
+    direction: "request",
+    plaintext: DECODER.decode(plaintext),
+    iv: envelope.iv,
+    ciphertext: envelope.ciphertext,
+    tag: envelope.tag,
+    envelope,
+  });
+
+  return { requestID, envelope };
 }
 
 function isEncryptedEnvelope(data) {
@@ -119,7 +133,13 @@ function isEncryptedEnvelope(data) {
   );
 }
 
-export async function openEnvelope(data, session, expectedRequestID) {
+
+export async function openEnvelope(
+  data,
+  session,
+  expectedRequestID,
+  onDebug,
+) {
   if (!isEncryptedEnvelope(data)) {
     throw new Error("Invalid encrypted response envelope");
   }
@@ -149,6 +169,20 @@ export async function openEnvelope(data, session, expectedRequestID) {
     throw new Error("Invalid encrypted response field length");
   }
 
+  onDebug?.({
+    stage: "Encrypted response received",
+    version: data.version,
+    sessionID: data.session_id,
+    requestID: data.request_id,
+    direction: data.direction,
+    iv: data.iv,
+    ciphertext: data.ciphertext,
+    tag: data.tag,
+    ciphertextLength: ciphertext.length,
+    ivLength: iv.length,
+    tagLength: tag.length,
+  });
+
   const fields = {
     version: data.version,
     sessionID: data.session_id,
@@ -158,7 +192,17 @@ export async function openEnvelope(data, session, expectedRequestID) {
     ciphertext,
   };
 
-  const validTag = await verifyHMACTag(session, tag, createMacPayload(fields));
+  const validTag = await verifyHMACTag(
+    session,
+    tag,
+    createMacPayload(fields),
+  );
+
+  onDebug?.({
+    stage: "Response HMAC verification",
+    valid: validTag,
+    requestID: data.request_id,
+  });
 
   if (!validTag) {
     throw new Error("Encrypted response authentication failed");
@@ -180,11 +224,25 @@ export async function openEnvelope(data, session, expectedRequestID) {
     throw new Error("Failed to decrypt response");
   }
 
+  const plaintextText = DECODER.decode(plaintext);
+
+  let result;
+
   try {
-    return JSON.parse(DECODER.decode(plaintext));
+    result = JSON.parse(plaintextText);
   } catch {
     throw new Error("Invalid decrypted response JSON");
   }
+
+  // Log the plaintext only after successful authentication and decryption.
+  onDebug?.({
+    stage: "Response decrypted",
+    requestID: data.request_id,
+    plaintext: plaintextText,
+    result,
+  });
+
+  return result;
 }
 
 export { isEncryptedEnvelope };

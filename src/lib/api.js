@@ -124,7 +124,7 @@ async function sendHandshake(body) {
   return data;
 }
 
-export async function panggil(jalur, { method = "GET", body } = {}) {
+export async function panggil(jalur, { method = "GET", body, onDebug } = {}) {
   const token = ambilToken();
   const headers = {};
 
@@ -168,7 +168,7 @@ export async function panggil(jalur, { method = "GET", body } = {}) {
     let encrypted;
 
     try {
-      encrypted = await createEnvelope(session, body);
+      encrypted = await createEnvelope(session, body, onDebug);
     } catch {
       throw new GalatApi(0, "Gagal mengenkripsi permintaan");
     }
@@ -201,7 +201,12 @@ export async function panggil(jalur, { method = "GET", body } = {}) {
 
     if (isEncryptedEnvelope(data)) {
       try {
-        result = await openEnvelope(data, session, encrypted.requestID);
+        result = await openEnvelope(
+          data,
+          session,
+          encrypted.requestID,
+          onDebug,
+        );
       } catch {
         throw new GalatApi(
           502,
@@ -218,6 +223,12 @@ export async function panggil(jalur, { method = "GET", body } = {}) {
     if (!response.ok) {
       throwApiError(response.status, result, token, jalur);
     }
+
+    onDebug?.({
+      stage: "HTTP response received",
+      status: response.status,
+      body: data,
+    });
 
     return result;
   }
