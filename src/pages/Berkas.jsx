@@ -1,6 +1,11 @@
 import { useState } from "react";
 import FileDropzone from "../components/FileDropzone";
 import SidebarLayout from "../layouts/SidebarLayout";
+import {
+  hapusBerkas,
+  unggahBerkas as kirimBerkas,
+  useDaftarBerkas,
+} from "../lib/berkas";
 import { daftarUlang, unggahBerkas } from "../data/berkas";
 
 const menu = [
@@ -22,6 +27,39 @@ const teks = {
 
 export default function Berkas() {
   const [aktif, setAktif] = useState("daftar-ulang");
+  const [daftar, muatUlang] = useDaftarBerkas();
+  const semua = daftar?.berkas ?? [];
+
+  // Kotak banyak berkas (rapor) memakai kode berakhiran nomor slot,
+  // misalnya rapor_sem_1 sampai rapor_sem_7.
+  function propsBerkas(b) {
+    const banyak = (b.jumlah ?? 1) > 1;
+    const terunggah = semua.filter((x) =>
+      banyak ? x.kode_berkas.startsWith(b.kode) : x.kode_berkas === b.kode,
+    );
+    return {
+      terunggah,
+      tidakTersedia: b.tidakTersedia,
+      onUnggah: async (file) => {
+        let kode = b.kode;
+        if (banyak) {
+          const terpakai = new Set(terunggah.map((x) => x.kode_berkas));
+          const slot = Array.from({ length: b.jumlah }, (_, i) => i + 1).find(
+            (n) => !terpakai.has(`${b.kode}${n}`),
+          );
+          kode = `${b.kode}${slot}`;
+          terpakai.add(kode);
+          terunggah.push({ kode_berkas: kode });
+        }
+        await kirimBerkas(kode, file);
+        muatUlang();
+      },
+      onHapus: async (berkas) => {
+        await hapusBerkas(berkas.id);
+        muatUlang();
+      },
+    };
+  }
 
   return (
     <SidebarLayout judul="BERKAS" menu={menu} aktif={aktif} onPilih={setAktif}>
@@ -42,6 +80,7 @@ export default function Berkas() {
                 hint={b.hint}
                 optional={b.optional}
                 jumlah={b.jumlah}
+                {...propsBerkas(b)}
               />
             ))}
           </div>
@@ -60,6 +99,7 @@ export default function Berkas() {
                   accept={b.accept}
                   minKB={b.minKB}
                   maxKB={b.maxKB}
+                  {...propsBerkas(b)}
                 />
               ))}
             </section>

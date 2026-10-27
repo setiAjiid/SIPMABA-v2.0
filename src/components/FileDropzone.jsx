@@ -1,6 +1,16 @@
 import { useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
+import { ALGORITMA, formatUkuran } from "../lib/berkas";
 
+const latar = {
+  AES: "bg-algorithm-aes",
+  DES: "bg-algorithm-des",
+  RC4: "bg-algorithm-rc4",
+};
+
+// terunggah: berkas milik kotak ini yang sudah tersimpan di server.
+// onUnggah(file) dan onHapus(berkas) dipanggil satu per satu dan boleh
+// melempar galat; pesannya ditampilkan di bawah kotak.
 export default function FileDropzone({
   label,
   hint,
@@ -9,17 +19,20 @@ export default function FileDropzone({
   minKB = 200,
   maxKB = 500,
   jumlah = 1,
-  onChange,
+  terunggah = [],
+  onUnggah,
+  onHapus,
+  tidakTersedia,
 }) {
   const inputRef = useRef(null);
-  const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
+  const [sibuk, setSibuk] = useState(false);
   const banyak = jumlah > 1;
 
-  function pilih(daftar) {
+  async function pilih(daftar) {
     const baru = Array.from(daftar ?? []);
-    if (baru.length === 0) return;
+    if (baru.length === 0 || sibuk || tidakTersedia) return;
     const tujuan = banyak ? baru : baru.slice(0, 1);
 
     for (const f of tujuan) {
@@ -33,22 +46,40 @@ export default function FileDropzone({
         setError(`Ukuran berkas harus ${minKB} sampai ${maxKB} KB${sebut}`);
         return;
       }
+      if (
+        banyak &&
+        terunggah.some((b) => b.nama_asli === f.name && b.ukuran_byte === f.size)
+      ) {
+        setError(`Berkas itu sudah ada dalam daftar${sebut}`);
+        return;
+      }
     }
-
-    const gabung = banyak ? [...files, ...tujuan] : tujuan;
-    if (gabung.length > jumlah) {
+    if (banyak && terunggah.length + tujuan.length > jumlah) {
       setError(`Maksimal ${jumlah} berkas`);
       return;
     }
+
     setError("");
-    setFiles(gabung);
-    onChange?.(banyak ? gabung : gabung[0]);
+    setSibuk(true);
+    try {
+      for (const f of tujuan) await onUnggah?.(f);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSibuk(false);
+    }
   }
 
-  function hapus(indeks) {
-    const sisa = files.filter((_, i) => i !== indeks);
-    setFiles(sisa);
-    onChange?.(sisa);
+  async function hapus(berkas) {
+    setSibuk(true);
+    setError("");
+    try {
+      await onHapus?.(berkas);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSibuk(false);
+    }
   }
 
   return (
@@ -62,80 +93,98 @@ export default function FileDropzone({
 
       <div className="flex flex-col gap-2">
         <p className="text-xs text-muted">{hint}</p>
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragging(false);
-            pilih(e.dataTransfer.files);
-          }}
-          className={`flex flex-col items-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center ${
-            error
-              ? "border-error bg-background"
-              : dragging
-                ? "border-brand bg-brand-soft"
-                : "border-border bg-background"
-          }`}
-        >
-          <Upload size={18} className="text-brand" />
-          <p className="text-sm font-semibold text-ink">
-            {!banyak && files[0]
-              ? `${files[0].name} (${Math.round(files[0].size / 1024)} KB)`
-              : "Tarik berkas ke sini atau pilih berkas"}
+        {tidakTersedia ? (
+          <p className="rounded-lg border border-dashed border-border bg-background px-4 py-6 text-center text-sm text-muted">
+            {tidakTersedia}
           </p>
-          <button
-            type="button"
-            onClick={() => inputRef.current.click()}
-            className="h-9 rounded-lg border border-border bg-surface px-4 text-sm font-bold text-brand transition-colors hover:bg-brand-soft"
-          >
-            Pilih berkas
-          </button>
-          <input
-            ref={inputRef}
-            type="file"
-            multiple={banyak}
-            accept={accept.join(",")}
-            className="hidden"
-            onChange={(e) => {
-              pilih(e.target.files);
-              e.target.value = "";
+        ) : (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
             }}
-          />
-        </div>
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              pilih(e.dataTransfer.files);
+            }}
+            className={`flex flex-col items-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center ${
+              error
+                ? "border-error bg-background"
+                : dragging
+                  ? "border-brand bg-brand-soft"
+                  : "border-border bg-background"
+            }`}
+          >
+            <Upload size={18} className="text-brand" />
+            <p className="text-sm font-semibold text-ink">
+              {sibuk
+                ? "Mengenkripsi dan menyimpan..."
+                : !banyak && terunggah[0]
+                  ? "Pilih berkas lain untuk mengganti"
+                  : "Tarik berkas ke sini atau pilih berkas"}
+            </p>
+            <button
+              type="button"
+              disabled={sibuk}
+              onClick={() => inputRef.current.click()}
+              className="h-9 rounded-lg border border-border bg-surface px-4 text-sm font-bold text-brand transition-colors hover:bg-brand-soft disabled:opacity-60"
+            >
+              Pilih berkas
+            </button>
+            <input
+              ref={inputRef}
+              type="file"
+              multiple={banyak}
+              accept={accept.join(",")}
+              className="hidden"
+              onChange={(e) => {
+                pilih(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </div>
+        )}
         {error && <p className="text-xs text-error">{error}</p>}
 
-        {banyak && (
-          <>
-            {files.length > 0 && (
-              <ul className="flex flex-col gap-1">
-                {files.map((f, i) => (
-                  <li
-                    key={`${f.name}-${i}`}
-                    className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2 text-xs text-ink"
-                  >
-                    <span className="truncate">
-                      {f.name} ({Math.round(f.size / 1024)} KB)
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => hapus(i)}
-                      aria-label={`Hapus ${f.name}`}
-                      className="ml-3 shrink-0 text-error"
+        {terunggah.length > 0 && (
+          <ul className="flex flex-col gap-1">
+            {terunggah.map((b) => (
+              <li
+                key={b.id}
+                className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2 text-xs text-ink"
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  {b.nama_asli} ({formatUkuran(b.ukuran_byte)})
+                </span>
+                <span className="flex shrink-0 gap-1">
+                  {ALGORITMA.map((a) => (
+                    <span
+                      key={a}
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold text-surface ${latar[a]}`}
                     >
-                      <X size={14} aria-hidden="true" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <p className="text-xs font-semibold text-muted">
-              {files.length} dari {jumlah} berkas
-            </p>
-          </>
+                      {a}
+                    </span>
+                  ))}
+                </span>
+                <button
+                  type="button"
+                  disabled={sibuk}
+                  onClick={() => hapus(b)}
+                  aria-label={`Hapus ${b.nama_asli}`}
+                  className="shrink-0 text-error disabled:opacity-60"
+                >
+                  <X size={14} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {banyak && (
+          <p className="text-xs font-semibold text-muted">
+            {terunggah.length} dari {jumlah} berkas
+          </p>
         )}
       </div>
     </div>
