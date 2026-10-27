@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { kelengkapan, metode } from "../data/beranda";
 import { ambilNama } from "../lib/api";
 import { useStatusBiodata } from "../lib/useStatusBiodata";
+import { formatUkuran, useDaftarBerkas } from "../lib/berkas";
 
 const warna = {
   AES: "bg-algorithm-aes",
@@ -14,6 +15,7 @@ const judulBagian = "text-xl font-bold text-ink";
 
 export default function Beranda() {
   const [hasil] = useStatusBiodata();
+  const [berkas] = useDaftarBerkas();
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
@@ -85,7 +87,11 @@ export default function Beranda() {
           <div className={`${kartu} flex items-center justify-between p-6`}>
             <div>
               <p className="font-semibold text-ink">Dokumen pendaftaran</p>
-              <p className="text-sm text-muted">7 berkas, 4,2 MB</p>
+              <p className="text-sm text-muted">
+                {berkas
+                  ? `${berkas.jumlah} berkas, ${formatUkuran(berkas.total_ukuran_byte)}`
+                  : "Memuat..."}
+              </p>
             </div>
             <Link
               to="/berkas"
