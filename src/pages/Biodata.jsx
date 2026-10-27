@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DataDiri from "./biodata/DataDiri";
 import Pendidikan from "./biodata/Pendidikan";
+import Rumah from "./biodata/Rumah";
 
 const tabs = [
   { id: "data-diri", label: "Data Diri" },
@@ -11,8 +12,11 @@ const tabs = [
   { id: "pendukung", label: "Pendukung" },
 ];
 
+const isi = { "data-diri": DataDiri, pendidikan: Pendidikan, rumah: Rumah };
+
 export default function Biodata() {
   const [tab, setTab] = useState("data-diri");
+  const Isi = isi[tab];
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,9 +36,9 @@ export default function Biodata() {
         ))}
       </div>
       <section className="rounded-2xl bg-surface p-6 shadow-card">
-        {tab === "data-diri" && <DataDiri />}
-        {tab === "pendidikan" && <Pendidikan />}
-        {tab !== "data-diri" && tab !== "pendidikan" && (
+        {Isi ? (
+          <Isi />
+        ) : (
           <p className="text-sm text-muted">Tab ini menyusul.</p>
         )}
       </section>
