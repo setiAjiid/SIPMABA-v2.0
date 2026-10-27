@@ -4,7 +4,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import InputKataSandi from "../components/InputKataSandi";
 import AuthLayout from "../layouts/AuthLayout";
-import { panggil, simpanNama, simpanToken } from "../lib/api";
+import { panggil, simpanNama, simpanToken, simpanRefreshToken } from "../lib/api";
 
 export default function Masuk() {
   const [namaPengguna, setNamaPengguna] = useState("");
@@ -30,7 +30,8 @@ export default function Masuk() {
         method: "POST",
         body: { nama_pengguna: namaPengguna.trim(), kata_sandi: kataSandi },
       });
-      simpanToken(res.data.token);
+      simpanToken(res.data.access_token);
+      simpanRefreshToken(res.data.refresh_token);
       simpanNama(res.data.nama_pengguna);
       navigate("/beranda", { replace: true });
     } catch (err) {
