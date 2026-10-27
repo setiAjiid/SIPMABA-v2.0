@@ -8,7 +8,7 @@ export const kelengkapan = [
 ];
 
 export const metode = [
-  { kode: "AES", mode: "AES-256-CBC", kunci: "Kunci 256 bit" },
-  { kode: "DES", mode: "DES-CBC", kunci: "Kunci 56 bit" },
-  { kode: "RC4", mode: "RC4", kunci: "Kunci 128 bit" },
+  { kode: "AES", mode: "AES-256-CTR", kunci: "Kunci 256 bit" },
+  { kode: "DES", mode: "DES-CTR", kunci: "Kunci 56 bit" },
+  { kode: "RC4", mode: "RC4 + HKDF per berkas", kunci: "Kunci 256 bit" },
 ];

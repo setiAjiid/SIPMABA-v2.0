@@ -124,7 +124,9 @@ export default function Beranda() {
               </div>
             ))}
             <p className="border-t border-border bg-background px-6 py-4 text-sm text-muted">
-              Kunci diturunkan dari password Anda dan tidak disimpan di server.
+              Berkas hanya disimpan dalam bentuk ciphertext. Kuncinya ada di
+              server dan tidak pernah dikirim ke browser, dan semua data
+              dikirim lewat sesi terenkripsi.
             </p>
           </div>
         </section>
