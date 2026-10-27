@@ -3,7 +3,7 @@ import Button from "./Button";
 import Input from "./Input";
 import Select from "./Select";
 
-export default function FormKolom({ bagian }) {
+export default function FormKolom({ bagian, children }) {
   const semuaKolom = bagian.flatMap((b) => b.kolom);
   const [form, setForm] = useState(() =>
     Object.fromEntries(semuaKolom.map((k) => [k.nama, ""])),
@@ -77,6 +77,7 @@ export default function FormKolom({ bagian }) {
           </div>
         </section>
       ))}
+      {children}
       <div>
         <Button type="submit">Simpan</Button>
       </div>

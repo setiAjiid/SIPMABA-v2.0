@@ -1,6 +1,8 @@
 import { useState } from "react";
+import CatatanKhusus from "./biodata/CatatanKhusus";
 import DataDiri from "./biodata/DataDiri";
 import Pendidikan from "./biodata/Pendidikan";
+import Pendukung from "./biodata/Pendukung";
 import Rumah from "./biodata/Rumah";
 
 const tabs = [
@@ -12,7 +14,13 @@ const tabs = [
   { id: "pendukung", label: "Pendukung" },
 ];
 
-const isi = { "data-diri": DataDiri, pendidikan: Pendidikan, rumah: Rumah };
+const isi = {
+  "data-diri": DataDiri,
+  pendidikan: Pendidikan,
+  rumah: Rumah,
+  "catatan-khusus": CatatanKhusus,
+  pendukung: Pendukung,
+};
 
 export default function Biodata() {
   const [tab, setTab] = useState("data-diri");
