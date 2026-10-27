@@ -36,21 +36,14 @@ Page "Desain Antarmuka" adalah acuan untuk koding. Warna, tipografi, jarak, dan 
 
 ## 2. Enkripsi
 
-Yang tertulis di desain:
+Yang sudah diterapkan:
 
-- Metode di Beranda: AES-256-CBC (kunci 256 bit), DES-CBC (kunci 56 bit), dan RC4 (kunci 128 bit).
-- Biodata dan berkas disimpan terenkripsi dengan ketiga algoritma. Saat mengunduh, pengguna memilih salah satu.
-- Kunci diturunkan dari kata sandi pengguna dan tidak disimpan di server.
+- **In-transit.** `POST /api/handshake` (X25519), kunci sesi dari HKDF-SHA256 (salt `session_id`, info `my-go-api/v3`), lalu setiap permintaan dan respons dibungkus amplop AES-128-CTR + HMAC-SHA256 berisi `version`, `session_id`, `request_id` (sekali pakai, replay ditolak 409), `direction`, `iv`, `ciphertext`, dan `tag`. Sesi berlaku 15 menit. Untuk GET, amplop dikirim di header `X-Encrypted-Envelope` (JSON amplop dalam base64). Batas body amplop 1 MiB.
+- **Berkas.** Setiap berkas dienkripsi dengan AES-256-CTR, DES-CTR, dan RC4 (kunci per berkas lewat HKDF dengan IV). Hanya ciphertext yang disimpan, beserta IV dan tag HMAC. Saat mengunduh, pengguna memilih algoritma. "Lihat ciphertext" menampilkan base64.
+- **Biodata.** Kolom data pribadi disimpan sebagai ciphertext AES-256-CTR + HMAC (serializer GORM `enkripsi`). Kunci relasi, nomor pendaftaran, dan tanggal dibiarkan polos.
+- **Kunci.** Kunci berkas dan biodata ada di variabel lingkungan server (`DATABASE_SECRET_AES256` 32 karakter, `DATABASE_SECRET_DES` 8 karakter, `DATABASE_SECRET_RC4`), sama untuk semua pengguna, dan tidak pernah dikirim ke browser. Ini berbeda dari rancangan awal (kunci diturunkan dari kata sandi pengguna), yang tidak diterapkan.
 
-Perlu disepakati:
-
-- Fungsi penurunan kunci (PBKDF2 atau scrypt), salt, dan jumlah iterasi.
-- Cara menyimpan IV untuk tiap berkas dan tiap algoritma.
-- Enkripsi dijalankan di server atau di browser.
-- Nasib data lama saat kata sandi diganti atau direset, karena kuncinya ikut berubah.
-- Tampilan "Lihat ciphertext" (hex, base64, atau potongan awal saja).
-
-DES dan RC4 sudah tidak dianggap aman. Keduanya dipakai karena diwajibkan tugas.
+Batasan yang diketahui: kunci berkas juga dipakai sebagai kunci HMAC, dan DES serta RC4 sudah tidak dianggap aman. Keduanya dipakai karena diwajibkan tugas.
 
 ## 3. Autentikasi
 
@@ -213,7 +206,7 @@ Aturan umum: JPG atau PNG, 200 sampai 500 KB, kecuali disebutkan lain. Data yang
 | `surat_kode_etik`           | Surat Pernyataan Kode Etik Mahasiswa            | Ya    | Bermeterai Rp10.000.                                       |
 | `sertifikat_nilai_tka`      | Sertifikat dan nilai TKA                        | Tidak |                                                            |
 
-Desain menampilkan penghitung "0 dari 7 berkas". Perlu disepakati apakah yang dihitung hanya berkas wajib atau semuanya.
+Penghitung "0 dari 7 berkas" milik kotak Rapor: satu berkas per semester, dengan kode `rapor_sem_1` sampai `rapor_sem_7`.
 
 ### 6.2 Unggah Berkas
 
@@ -264,37 +257,39 @@ Keluaran untuk tiap algoritma (AES, DES, RC4):
 
 Tombol "Salin sebagai tabel Markdown" cukup dikerjakan di frontend.
 
-## 8. Rancangan endpoint
+## 8. Endpoint
 
-Rancangan awal, belum final.
+Semua di bawah `/api` dan dibungkus amplop terenkripsi (lihat bagian 2), kecuali `/handshake`. Galat memakai `{"message": "..."}` atau `{"error": "..."}`, dan galat validasi menambahkan rincian di `error`.
 
-| Metode | Path                                          | Fungsi                       |
-| ------ | --------------------------------------------- | ---------------------------- |
-| POST   | `/api/auth/daftar`                            | Buat akun.                   |
-| POST   | `/api/auth/masuk`                             | Masuk dan mulai sesi.        |
-| POST   | `/api/auth/keluar`                            | Keluar.                      |
-| POST   | `/api/auth/lupa-kata-sandi`                   | Kirim instruksi reset.       |
-| GET    | `/api/beranda`                                | Ringkasan status dan berkas. |
-| GET    | `/api/biodata/{tab}`                          | Ambil isi satu tab.          |
-| PUT    | `/api/biodata/{tab}`                          | Simpan satu tab.             |
-| GET    | `/api/berkas`                                 | Daftar berkas pengguna.      |
-| POST   | `/api/berkas/{kode}`                          | Unggah berkas.               |
-| DELETE | `/api/berkas/{kode}`                          | Hapus berkas.                |
-| GET    | `/api/berkas/{kode}/unduh?algoritma=AES`      | Unduh hasil dekripsi.        |
-| GET    | `/api/berkas/{kode}/ciphertext?algoritma=AES` | Lihat ciphertext.            |
-| POST   | `/api/analisis/uji-dekripsi`                  | Jalankan uji dekripsi.       |
+| Metode | Path | Fungsi |
+| --- | --- | --- |
+| POST | `/api/handshake` | Tukar kunci, buat sesi enkripsi. |
+| POST | `/api/auth/daftar` | Buat akun (5 per menit per IP). |
+| POST | `/api/auth/masuk` | Masuk, mengembalikan `data.token` (JWT, 5 per menit per IP). |
+| POST | `/api/auth/keluar` | Keluar. |
+| POST | `/api/auth/lupa_katasandi` | Selalu membalas pesan yang sama. |
+| PUT | `/api/auth/ganti-katasandi` | Ganti kata sandi (perlu login). |
+| GET | `/api/beranda` | Ringkasan status dan berkas. |
+| GET | `/api/biodata/{tab}` | Ambil isi satu tab. |
+| PUT | `/api/biodata/{tab}` | Simpan satu tab (seluruh isian tab). |
+| GET | `/api/berkas` | Daftar berkas pengguna. |
+| POST | `/api/berkas/{kode}` | Unggah berkas: `nama_asli`, `tipe_mime`, `isi_base64`. |
+| GET | `/api/berkas/{id}/unduh?algoritma=AES` | Unduh hasil dekripsi (`isi_base64`). |
+| GET | `/api/berkas/{id}/ciphertext?algoritma=AES` | Lihat ciphertext (base64). |
+| DELETE | `/api/berkas/{id}` | Hapus berkas. |
+| GET | `/api/analisis/berkas` | Berkas yang sudah terenkripsi tiga algoritma. |
+| POST | `/api/analisis/uji-dekripsi` | `berkas_id`, `jumlah_percobaan` (1 sampai 100). |
 
 `{tab}` bernilai `data-diri`, `pendidikan`, `keluarga`, `rumah`, `catatan-khusus`, atau `pendukung`.
 
-Bentuk galat yang diusulkan:
+Keputusan yang sudah diambil:
 
-```json
-{
-  "kode": "VALIDASI_GAGAL",
-  "pesan": "Data tidak valid",
-  "field": { "nik": "NIK harus 16 digit" }
-}
-```
+- Nilai pilihan dikirim dalam bentuk kontrak (`laki_laki`, `masih_hidup`, `positif`, `true`/`false` untuk Ya/Tidak); frontend memetakan teks tampilan.
+- RT dan RW dikirim 3 digit; frontend menambahkan nol di depan.
+- Sumber informasi satu pilihan.
+- Nilai TKA boleh ditulis dengan koma (85,5) dan dikirim sebagai angka.
+- Kartu Keluarga dan Akta Kelahiran di Catatan Khusus dan halaman Berkas memakai kode yang sama (satu berkas).
+- Dokumen (`dokumen_lain`) dan video (`video_dokumentasi`) belum didukung; rencana batas 3 MB dan 10 MB.
 
 ## 9. Rencana setelah tugas
 
