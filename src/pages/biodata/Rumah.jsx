@@ -1,8 +1,10 @@
 import FormKolom from "../../components/FormKolom";
 
+const petunjukAngka = "Isi bilangan bulat, tanpa titik";
+
 const bagian = [
   {
-    judul: "Kondisi rumah",
+    judul: "Data rumah",
     kolom: [
       {
         nama: "kepemilikan",
@@ -35,12 +37,30 @@ const bagian = [
           "Non-PLN",
         ],
       },
-      { nama: "luasTanah", label: "Luas tanah (m²)", angka: true },
-      { nama: "luasBangunan", label: "Luas bangunan (m²)", angka: true },
-      { nama: "njop", label: "NJOP (Rp)", angka: true },
+      {
+        nama: "luasTanah",
+        label: "Luas tanah",
+        angka: true,
+        satuan: "m²",
+        petunjuk: petunjukAngka,
+      },
+      {
+        nama: "luasBangunan",
+        label: "Luas bangunan",
+        angka: true,
+        satuan: "m²",
+        petunjuk: petunjukAngka,
+      },
+      {
+        nama: "njop",
+        label: "NJOP",
+        angka: true,
+        satuan: "Rp",
+        petunjuk: petunjukAngka,
+      },
       {
         nama: "mck",
-        label: "Mandi cuci kakus",
+        label: "Mandi cuci kakus (MCK)",
         jenis: "select",
         pilihan: [
           "Milik sendiri di dalam rumah",
@@ -56,10 +76,17 @@ const bagian = [
       },
       {
         nama: "jarakPusatKota",
-        label: "Jarak ke pusat kota (km)",
+        label: "Jarak dari pusat kab/kota",
         angka: true,
+        satuan: "km",
+        petunjuk: petunjukAngka,
       },
-      { nama: "jumlahPenghuni", label: "Jumlah penghuni", angka: true, min: 1 },
+      {
+        nama: "jumlahPenghuni",
+        label: "Jumlah orang tinggal",
+        angka: true,
+        min: 1,
+      },
     ],
   },
 ];

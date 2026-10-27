@@ -6,6 +6,7 @@ export default function Input({
   error,
   aksiLabel,
   akhir,
+  satuan,
   className = "",
   ...props
 }) {
@@ -28,7 +29,7 @@ export default function Input({
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? noteId : undefined}
           className={`h-12 w-full rounded-lg border bg-surface px-4 text-sm text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
-            akhir ? "pr-12" : ""
+            akhir ? "pr-12" : satuan ? "pr-20" : ""
           } ${error ? "border-error" : "border-border"}`}
           {...props}
         />
@@ -36,6 +37,11 @@ export default function Input({
           <div className="absolute inset-y-0 right-0 flex items-center pr-4">
             {akhir}
           </div>
+        )}
+        {satuan && (
+          <span className="absolute inset-y-px right-px flex items-center rounded-r-[7px] border-l border-border bg-background px-4 text-sm text-muted">
+            {satuan}
+          </span>
         )}
       </div>
       {(error || hint) && (

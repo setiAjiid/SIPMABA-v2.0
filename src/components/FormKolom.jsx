@@ -147,6 +147,7 @@ export default function FormKolom({ bagian, children }) {
         maxLength={k.maks}
         inputMode={k.numerik || k.angka ? "numeric" : undefined}
         disabled={k.bacaSaja}
+        satuan={k.satuan}
         hint={
           k.nama === "namaKtm"
             ? `${form[k.nama].length}/${k.maks} karakter`
