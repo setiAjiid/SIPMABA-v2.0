@@ -118,6 +118,13 @@ const kunci = {
   disabilitas: "disabilitas",
 };
 
-export default function CatatanKhusus() {
-  return <FormKolom bagian={bagian} tab="catatan-khusus" kunci={kunci} />;
+export default function CatatanKhusus({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="catatan-khusus"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+    />
+  );
 }

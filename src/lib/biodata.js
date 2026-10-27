@@ -1,3 +1,5 @@
+import { panggil } from "./api";
+
 // Relasi biodata yang belum pernah disimpan dikirim backend dengan id kosong.
 export const ID_KOSONG = "00000000-0000-0000-0000-000000000000";
 
@@ -49,4 +51,50 @@ export function dariBackend(semuaKolom, kunci, data) {
       k.tipe === "date" ? String(nilai).slice(0, 10) : String(nilai);
   }
   return isi;
+}
+
+export const TAB_BIODATA = [
+  "data-diri",
+  "pendidikan",
+  "keluarga",
+  "rumah",
+  "catatan-khusus",
+  "pendukung",
+];
+
+const formatTanggal = (iso) =>
+  new Date(iso).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+// Satu tab dianggap tersimpan bila relasinya sudah ada. Baris Data Diri ikut
+// dibuat saat tab lain disimpan pertama kali, jadi untuk tab itu dipakai
+// nama_ijazah (wajib diisi) sebagai penanda.
+export async function ambilStatusBiodata() {
+  const hasil = await Promise.all(
+    TAB_BIODATA.map((tab) =>
+      panggil(`/biodata/${tab}`)
+        .then((res) => res.data)
+        .catch((err) => {
+          if (err.status === 404) return null;
+          throw err;
+        }),
+    ),
+  );
+
+  const status = {};
+  TAB_BIODATA.forEach((tab, i) => {
+    const d = hasil[i];
+    const tersimpan =
+      Boolean(d) &&
+      (tab === "data-diri" ? Boolean(d.nama_ijazah) : d.id !== ID_KOSONG);
+    status[tab] = {
+      tersimpan,
+      diubah: tersimpan && d.diubah_pada ? formatTanggal(d.diubah_pada) : null,
+    };
+  });
+
+  return { status, noPendaftaran: hasil[0]?.no_pendaftaran ?? "" };
 }

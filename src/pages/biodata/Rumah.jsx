@@ -105,6 +105,13 @@ const kunci = {
   jumlahPenghuni: "jumlah_penghuni",
 };
 
-export default function Rumah() {
-  return <FormKolom bagian={bagian} tab="rumah" kunci={kunci} />;
+export default function Rumah({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="rumah"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+    />
+  );
 }

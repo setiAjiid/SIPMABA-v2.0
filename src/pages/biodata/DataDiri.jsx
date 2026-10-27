@@ -274,6 +274,13 @@ const kunci = {
   daftarAsrama: "daftar_asrama",
 };
 
-export default function DataDiri() {
-  return <FormKolom bagian={bagian} tab="data-diri" kunci={kunci} />;
+export default function DataDiri({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="data-diri"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+    />
+  );
 }

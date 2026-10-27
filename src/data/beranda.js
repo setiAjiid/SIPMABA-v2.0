@@ -1,10 +1,10 @@
 export const kelengkapan = [
-  { nama: "Data Diri", simpan: "12 Januari 2026" },
-  { nama: "Pendidikan", simpan: "12 Januari 2026" },
-  { nama: "Keluarga", simpan: "13 Januari 2026" },
-  { nama: "Rumah", simpan: "13 Januari 2026" },
-  { nama: "Catatan Khusus", simpan: null },
-  { nama: "Pendukung", simpan: null },
+  { nama: "Data Diri", tab: "data-diri" },
+  { nama: "Pendidikan", tab: "pendidikan" },
+  { nama: "Keluarga", tab: "keluarga" },
+  { nama: "Rumah", tab: "rumah" },
+  { nama: "Catatan Khusus", tab: "catatan-khusus" },
+  { nama: "Pendukung", tab: "pendukung" },
 ];
 
 export const metode = [

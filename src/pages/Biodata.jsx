@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import SidebarLayout from "../layouts/SidebarLayout";
+import { useStatusBiodata } from "../lib/useStatusBiodata";
 import CatatanKhusus from "./biodata/CatatanKhusus";
 import DataDiri from "./biodata/DataDiri";
 import Keluarga from "./biodata/Keluarga";
@@ -51,22 +53,17 @@ const isi = {
   pendukung: Pendukung,
 };
 
-// sementara, nanti dari backend
-const tersimpan = {
-  "data-diri": true,
-  pendidikan: true,
-  keluarga: true,
-  rumah: true,
-};
-
 export default function Biodata() {
-  const [tab, setTab] = useState("data-diri");
+  // Beranda boleh membuka tab tertentu lewat state navigasi.
+  const tujuan = useLocation().state?.tab;
+  const [tab, setTab] = useState(isi[tujuan] ? tujuan : "data-diri");
+  const [hasil, muatUlang] = useStatusBiodata();
   const Isi = isi[tab];
   const aktif = tabs.find((t) => t.id === tab);
   const menu = tabs.map((t) => ({
     id: t.id,
     label: t.label,
-    status: !!tersimpan[t.id],
+    status: Boolean(hasil?.status[t.id]?.tersimpan),
   }));
 
   return (
@@ -78,7 +75,7 @@ export default function Biodata() {
           </h1>
           <p className="text-sm text-muted">{aktif.keterangan}</p>
         </div>
-        <Isi />
+        <Isi onTersimpan={muatUlang} />
       </div>
     </SidebarLayout>
   );

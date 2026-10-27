@@ -13,7 +13,13 @@ import {
 } from "../lib/biodata";
 
 // tab dan kunci opsional: tanpa keduanya form hanya memvalidasi.
-export default function FormKolom({ bagian, tab, kunci = {}, children }) {
+export default function FormKolom({
+  bagian,
+  tab,
+  kunci = {},
+  onTersimpan,
+  children,
+}) {
   const semuaKolom = bagian.flatMap((b) => ratakan(b.kolom ?? []));
   const [form, setForm] = useState(() =>
     Object.fromEntries(
@@ -88,6 +94,7 @@ export default function FormKolom({ bagian, tab, kunci = {}, children }) {
         body: keBackend(semuaKolom, kunci, form),
       });
       setPesan({ jenis: "sukses", teks: "Data tersimpan." });
+      onTersimpan?.();
     } catch (err) {
       setPesan({
         jenis: "galat",

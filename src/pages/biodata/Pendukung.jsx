@@ -84,6 +84,13 @@ const kunci = {
   totalPbb: "total_pbb",
 };
 
-export default function Pendukung() {
-  return <FormKolom bagian={bagian} tab="pendukung" kunci={kunci} />;
+export default function Pendukung({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="pendukung"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+    />
+  );
 }

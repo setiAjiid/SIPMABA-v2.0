@@ -203,6 +203,13 @@ const kunci = {
   teleponRumah: "alamat_ortu.no_telepon_rumah",
 };
 
-export default function Keluarga() {
-  return <FormKolom bagian={bagian} tab="keluarga" kunci={kunci} />;
+export default function Keluarga({ onTersimpan }) {
+  return (
+    <FormKolom
+      bagian={bagian}
+      tab="keluarga"
+      kunci={kunci}
+      onTersimpan={onTersimpan}
+    />
+  );
 }

@@ -30,7 +30,7 @@ const awal = {
   lulus: "",
 };
 
-export default function Pendidikan() {
+export default function Pendidikan({ onTersimpan }) {
   const [form, setForm] = useState(awal);
   const [errors, setErrors] = useState({});
   const [tka, setTka] = useState([]);
@@ -144,6 +144,7 @@ export default function Pendidikan() {
         },
       });
       setPesan({ jenis: "sukses", teks: "Data tersimpan." });
+      onTersimpan?.();
     } catch (err) {
       setPesan({
         jenis: "galat",
