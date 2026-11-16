@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from "react";
+import { ambilNama } from "./api";
+import { buatKunciBersama, buatPasanganKunci, bungkusKunci } from "./kunciBerbagi";
 import {
   pengguna as penggunaAwal,
   permintaanKeluar,
@@ -13,6 +15,8 @@ let keadaan = {
   pengguna: penggunaAwal,
   keluar: permintaanKeluar,
   masuk: permintaanMasuk,
+  kunci: null,
+  kunciDimuat: false,
 };
 
 const pendengar = new Set();
@@ -77,8 +81,125 @@ export const cabutAkses = (id) =>
     paket_kunci: undefined,
   });
 
+export function setujuiPermintaan(id, { data, jumlah_berkas, hari, sidik_kunci }) {
+  const sekarang = Date.now();
+  ubahMasuk(id, {
+    status: "aktif",
+    data,
+    jumlah_berkas,
+    sidik_kunci,
+    waktu_disetujui: new Date(sekarang).toISOString(),
+    berlaku_sampai: new Date(sekarang + hari * 24 * 60 * 60 * 1000).toISOString(),
+  });
+}
+
+const ubahKeluar = (id, perubahan) =>
+  ubah((k) => ({
+    keluar: k.keluar.map((p) => (p.id === id ? { ...p, ...perubahan } : p)),
+  }));
+
+export const pasangKunci = (id) =>
+  ubahKeluar(id, {
+    status: "aktif",
+    waktu_kunci_dipasang: new Date().toISOString(),
+    paket_contoh: undefined,
+  });
+
+// --- Pasangan kunci pengguna ini -------------------------------------------
+// Disimpan di localStorage per akun. Kunci pribadi hanya tersimpan dalam
+// bentuk terbungkus kata sandi (lihat kunciBerbagi.js).
+
+const tempatKunci = () => `sipmaba_kunci_berbagi:${ambilNama() ?? "pengguna"}`;
+
+export function muatKunci() {
+  let kunci = null;
+  try {
+    kunci = JSON.parse(localStorage.getItem(tempatKunci()));
+  } catch {
+    /* penyimpanan tidak tersedia atau isinya rusak: anggap belum ada kunci */
+  }
+  if (!keadaan.kunciDimuat || kunci?.sidik !== keadaan.kunci?.sidik) {
+    ubah(() => ({ kunci, kunciDimuat: true }));
+  }
+}
+
+export function simpanKunci(kunci) {
+  try {
+    localStorage.setItem(tempatKunci(), JSON.stringify(kunci));
+  } catch (err) {
+    console.error("Gagal menyimpan pasangan kunci:", err);
+  }
+  ubah(() => ({ kunci, kunciDimuat: true }));
+}
+
+// --- Simulasi pihak lain ----------------------------------------------------
+// Selama server berbagi belum ada, kunci publik pengguna lain dan paket yang
+// "dikirim" pemilik data dibuat di peramban ini dengan kriptografi sungguhan.
+
+const kunciContoh = new Map();
+
+export function kunciPenggunaContoh(namaPengguna) {
+  if (!kunciContoh.has(namaPengguna)) {
+    kunciContoh.set(
+      namaPengguna,
+      buatPasanganKunci(crypto.randomUUID()).then(({ publik, sidik }) => ({
+        publik,
+        sidik,
+      })),
+    );
+  }
+  return kunciContoh.get(namaPengguna);
+}
+
+const paketDisiapkan = new Map();
+
+// Membuat paket kunci dari pemilik untuk permintaan yang sudah disetujui,
+// dibungkus dengan kunci publik pengguna ini yang sekarang.
+export function siapkanPaketContoh(id) {
+  const { keluar, kunci } = keadaan;
+  const p = keluar.find((x) => x.id === id);
+  if (!p || p.status !== "disetujui" || !kunci) return Promise.resolve();
+  if (p.paket_contoh && p.sidik_penerima === kunci.sidik) return Promise.resolve();
+
+  const tanda = `${id}:${kunci.sidik}`;
+  if (!paketDisiapkan.has(tanda)) {
+    paketDisiapkan.set(
+      tanda,
+      (async () => {
+        const bersama = await buatKunciBersama();
+        const paket = await bungkusKunci(bersama.mentah, kunci.publik);
+        ubahKeluar(id, {
+          sidik_kunci: bersama.sidik,
+          paket_contoh: paket,
+          sidik_penerima: kunci.sidik,
+        });
+      })().finally(() => paketDisiapkan.delete(tanda)),
+    );
+  }
+  return paketDisiapkan.get(tanda);
+}
+
 export const jumlahMenunggu = (masuk) =>
   masuk.filter((p) => p.status === "menunggu").length;
+
+export function unduhTeks(namaBerkas, isi, tipe = "text/plain") {
+  const url = URL.createObjectURL(new Blob([isi], { type: tipe }));
+  const tautan = document.createElement("a");
+  tautan.href = url;
+  tautan.download = namaBerkas;
+  tautan.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// false bila peramban menolak akses papan klip.
+export async function salinTeks(teks) {
+  try {
+    await navigator.clipboard.writeText(teks);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export function inisial(nama) {
   return nama
