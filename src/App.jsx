@@ -11,7 +11,9 @@ import Berkas from "./pages/Berkas";
 import Analisis from "./pages/Analisis";
 import CariPengguna from "./pages/berbagi/CariPengguna";
 import KotakMasuk from "./pages/berbagi/KotakMasuk";
+import MasukkanKunci from "./pages/berbagi/MasukkanKunci";
 import PermintaanSaya from "./pages/berbagi/PermintaanSaya";
+import SetujuiPermintaan from "./pages/berbagi/SetujuiPermintaan";
 
 export default function App() {
   return (
@@ -54,6 +56,14 @@ export default function App() {
         <Route path="/berbagi" element={<CariPengguna />} />
         <Route path="/berbagi/permintaan" element={<PermintaanSaya />} />
         <Route path="/berbagi/kotak-masuk" element={<KotakMasuk />} />
+        <Route
+          path="/berbagi/kotak-masuk/:id/setujui"
+          element={<SetujuiPermintaan />}
+        />
+        <Route
+          path="/berbagi/permintaan/:id/kunci"
+          element={<MasukkanKunci />}
+        />
       </Route>
       <Route path="*" element={<Navigate to="/masuk" replace />} />
     </Routes>
