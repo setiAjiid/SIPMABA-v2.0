@@ -10,7 +10,9 @@ import Biodata from "./pages/Biodata";
 import Berkas from "./pages/Berkas";
 import Analisis from "./pages/Analisis";
 import CariPengguna from "./pages/berbagi/CariPengguna";
+import DataDibagikan from "./pages/berbagi/DataDibagikan";
 import KotakMasuk from "./pages/berbagi/KotakMasuk";
+import KunciSaya from "./pages/berbagi/KunciSaya";
 import MasukkanKunci from "./pages/berbagi/MasukkanKunci";
 import PermintaanSaya from "./pages/berbagi/PermintaanSaya";
 import SetujuiPermintaan from "./pages/berbagi/SetujuiPermintaan";
@@ -64,6 +66,11 @@ export default function App() {
           path="/berbagi/permintaan/:id/kunci"
           element={<MasukkanKunci />}
         />
+        <Route
+          path="/berbagi/permintaan/:id/data"
+          element={<DataDibagikan />}
+        />
+        <Route path="/berbagi/kunci" element={<KunciSaya />} />
       </Route>
       <Route path="*" element={<Navigate to="/masuk" replace />} />
     </Routes>
