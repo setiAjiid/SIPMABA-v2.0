@@ -24,7 +24,7 @@ export default function Select({
         }`}
         {...props}
       >
-        <option value="">{placeholder}</option>
+        {placeholder !== null && <option value="">{placeholder}</option>}
         {options.map((o) => (
           <option key={nilaiPilihan(o)} value={nilaiPilihan(o)}>
             {labelPilihan(o)}

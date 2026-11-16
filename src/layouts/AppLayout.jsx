@@ -6,6 +6,7 @@ const menu = [
   { to: "/biodata", label: "Biodata" },
   { to: "/berkas", label: "Berkas" },
   { to: "/analisis", label: "Analisis" },
+  { to: "/berbagi", label: "Berbagi" },
 ];
 
 export default function AppLayout() {
