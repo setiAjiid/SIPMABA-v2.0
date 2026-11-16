@@ -9,6 +9,7 @@ import Beranda from "./pages/Beranda";
 import Biodata from "./pages/Biodata";
 import Berkas from "./pages/Berkas";
 import Analisis from "./pages/Analisis";
+import CariPengguna from "./pages/berbagi/CariPengguna";
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/biodata" element={<Biodata />} />
         <Route path="/berkas" element={<Berkas />} />
         <Route path="/analisis" element={<Analisis />} />
+        <Route path="/berbagi" element={<CariPengguna />} />
       </Route>
       <Route path="*" element={<Navigate to="/masuk" replace />} />
     </Routes>
