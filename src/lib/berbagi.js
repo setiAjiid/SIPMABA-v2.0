@@ -34,7 +34,7 @@ export function ubah(pembaru) {
 export const bacaKeadaan = () => keadaan;
 
 export function useBerbagi() {
-  return useSyncExternalStore(langganan, bacaKeadaan);
+  return useSyncExternalStore(langganan, bacaKeadaan, bacaKeadaan);
 }
 
 export const cariPengguna = (daftar, namaPengguna) =>
@@ -181,6 +181,18 @@ export function siapkanPaketContoh(id) {
 
 export const jumlahMenunggu = (masuk) =>
   masuk.filter((p) => p.status === "menunggu").length;
+
+// Isi berkas milik pengguna lain hanya bisa didekripsi server dengan kunci
+// bersama, jadi belum tersedia selama endpoint berbagi belum ada.
+export async function ambilBerkasDibagikan(permintaanId, namaBerkas) {
+  throw new Error(
+    `Isi ${namaBerkas} belum dapat dibuka karena server berbagi belum tersambung.`,
+  );
+}
+
+export const aksesBerlaku = (permintaan) =>
+  permintaan?.status === "aktif" &&
+  new Date(permintaan.berlaku_sampai).getTime() > Date.now();
 
 export function unduhTeks(namaBerkas, isi, tipe = "text/plain") {
   const url = URL.createObjectURL(new Blob([isi], { type: tipe }));
