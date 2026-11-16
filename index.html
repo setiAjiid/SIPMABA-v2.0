@@ -5,6 +5,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SIPMABA v2.0</title>
+    <script>
+      // Pasang tema sebelum halaman digambar; logikanya sama dengan src/lib/tema.js.
+      (function () {
+        var tema = "light";
+        try {
+          var simpan = localStorage.getItem("sipmaba_tema");
+          if (simpan === "dark" || simpan === "light") tema = simpan;
+          else if (matchMedia("(prefers-color-scheme: dark)").matches) tema = "dark";
+        } catch (e) {}
+        document.documentElement.dataset.theme = tema;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
