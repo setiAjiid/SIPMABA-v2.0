@@ -10,6 +10,8 @@ import Biodata from "./pages/Biodata";
 import Berkas from "./pages/Berkas";
 import Analisis from "./pages/Analisis";
 import CariPengguna from "./pages/berbagi/CariPengguna";
+import KotakMasuk from "./pages/berbagi/KotakMasuk";
+import PermintaanSaya from "./pages/berbagi/PermintaanSaya";
 
 export default function App() {
   return (
@@ -50,6 +52,8 @@ export default function App() {
         <Route path="/berkas" element={<Berkas />} />
         <Route path="/analisis" element={<Analisis />} />
         <Route path="/berbagi" element={<CariPengguna />} />
+        <Route path="/berbagi/permintaan" element={<PermintaanSaya />} />
+        <Route path="/berbagi/kotak-masuk" element={<KotakMasuk />} />
       </Route>
       <Route path="*" element={<Navigate to="/masuk" replace />} />
     </Routes>
