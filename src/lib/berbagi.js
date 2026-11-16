@@ -38,7 +38,44 @@ export const cariPengguna = (daftar, namaPengguna) =>
 
 // Permintaan terbaru pengguna ini kepada seorang pemilik data.
 export const permintaanUntuk = (keluar, namaPengguna) =>
-  keluar.findLast((p) => p.pemilik === namaPengguna);
+  keluar.find((p) => p.pemilik === namaPengguna);
+
+// Permintaan baru menggantikan permintaan lama kepada pemilik yang sama
+// (ditolak atau berakhir), sehingga satu pemilik hanya punya satu baris.
+export function ajukanPermintaan(pemilik, data, pesan = "") {
+  const baru = {
+    id: `k-${Date.now()}`,
+    pemilik,
+    data,
+    pesan,
+    status: "menunggu",
+    waktu_diajukan: new Date().toISOString(),
+  };
+  ubah((k) => ({
+    keluar: [baru, ...k.keluar.filter((p) => p.pemilik !== pemilik)],
+  }));
+  return baru;
+}
+
+export function batalkanPermintaan(id) {
+  ubah((k) => ({ keluar: k.keluar.filter((p) => p.id !== id) }));
+}
+
+const ubahMasuk = (id, perubahan) =>
+  ubah((k) => ({
+    masuk: k.masuk.map((p) => (p.id === id ? { ...p, ...perubahan } : p)),
+  }));
+
+export const tolakPermintaan = (id) =>
+  ubahMasuk(id, { status: "ditolak", waktu_ditolak: new Date().toISOString() });
+
+// Mencabut akses juga menghapus kunci bersama yang disimpan untuk peminta.
+export const cabutAkses = (id) =>
+  ubahMasuk(id, {
+    status: "dicabut",
+    waktu_dicabut: new Date().toISOString(),
+    paket_kunci: undefined,
+  });
 
 export const jumlahMenunggu = (masuk) =>
   masuk.filter((p) => p.status === "menunggu").length;

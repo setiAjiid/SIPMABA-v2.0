@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import {
@@ -8,14 +7,12 @@ import {
   JudulSeksi,
   KartuDaftar,
 } from "../../components/berbagi/DaftarPengguna";
+import DialogAjukan from "../../components/berbagi/DialogAjukan";
 import KerangkaBerbagi from "../../components/berbagi/KerangkaBerbagi";
 import Lencana from "../../components/berbagi/Lencana";
 import { formatTanggal, permintaanUntuk, useBerbagi } from "../../lib/berbagi";
 
-const tautanUtama =
-  "inline-flex h-10 items-center justify-center rounded-lg border border-brand bg-brand px-4 text-sm font-bold text-surface transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
-
-function Aksi({ permintaan }) {
+function Aksi({ permintaan, onMinta }) {
   if (permintaan?.status === "menunggu") {
     return <Lencana>Menunggu persetujuan</Lencana>;
   }
@@ -23,12 +20,9 @@ function Aksi({ permintaan }) {
     return (
       <>
         <Lencana varian="sukses">Disetujui</Lencana>
-        <Link
-          to={`/berbagi/permintaan/${permintaan.id}/kunci`}
-          className={tautanUtama}
-        >
+        <Button to={`/berbagi/permintaan/${permintaan.id}/kunci`}>
           Masukkan kunci
-        </Link>
+        </Button>
       </>
     );
   }
@@ -36,18 +30,15 @@ function Aksi({ permintaan }) {
     return (
       <>
         <Lencana varian="sukses">Disetujui</Lencana>
-        <Link
-          to={`/berbagi/permintaan/${permintaan.id}/data`}
-          className={tautanUtama}
-        >
+        <Button to={`/berbagi/permintaan/${permintaan.id}/data`}>
           Lihat data
-        </Link>
+        </Button>
       </>
     );
   }
   // Belum pernah meminta, ditolak, atau aksesnya sudah berakhir.
   return (
-    <Button type="button" variant="secondary">
+    <Button type="button" variant="secondary" onClick={onMinta}>
       Minta akses
     </Button>
   );
@@ -57,6 +48,8 @@ export default function CariPengguna() {
   const { pengguna, keluar } = useBerbagi();
   const [isian, setIsian] = useState("");
   const [kataKunci, setKataKunci] = useState("");
+  const [tujuan, setTujuan] = useState(null);
+  const [pesan, setPesan] = useState("");
 
   const kunci = kataKunci.trim().toLowerCase();
   const hasil = pengguna.filter(
@@ -69,6 +62,7 @@ export default function CariPengguna() {
   function cari(e) {
     e.preventDefault();
     setKataKunci(isian);
+    setPesan("");
   }
 
   return (
@@ -99,6 +93,11 @@ export default function CariPengguna() {
             </span>
           }
         />
+        {pesan && (
+          <p role="status" className="text-sm text-success">
+            {pesan}
+          </p>
+        )}
         <KartuDaftar catatan="Hanya nama pengguna yang tampil di sini. Data pribadi tidak terlihat sebelum pemilik menyetujui permintaan.">
           {hasil.length === 0 && (
             <BarisKosong>
@@ -112,11 +111,26 @@ export default function CariPengguna() {
               nama={p.nama}
               keterangan={`${p.nama_pengguna} · Bergabung ${formatTanggal(p.bergabung)}`}
             >
-              <Aksi permintaan={permintaanUntuk(keluar, p.nama_pengguna)} />
+              <Aksi
+                permintaan={permintaanUntuk(keluar, p.nama_pengguna)}
+                onMinta={() => setTujuan(p)}
+              />
             </BarisPengguna>
           ))}
         </KartuDaftar>
       </section>
+
+      {tujuan && (
+        <DialogAjukan
+          pengguna={tujuan}
+          onTutup={() => setTujuan(null)}
+          onTerkirim={(p) =>
+            setPesan(
+              `Permintaan terkirim ke ${p.nama}. Pantau statusnya di Permintaan saya.`,
+            )
+          }
+        />
+      )}
     </KerangkaBerbagi>
   );
 }
