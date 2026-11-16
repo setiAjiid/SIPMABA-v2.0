@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import TombolTema from "../components/TombolTema";
 import { ambilNama, hapusToken, panggil } from "../lib/api";
 
 const menu = [
@@ -24,7 +25,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="h-16 bg-brand text-surface">
+      <header className="h-16 bg-gradient-to-r from-header-from to-header-to text-on-brand">
         <div className="flex h-full items-center justify-between px-6">
           <div className="flex h-full items-center gap-10">
             <span className="text-sm font-bold tracking-[0.2em]">SIPMABA</span>
@@ -36,8 +37,8 @@ export default function AppLayout() {
                   className={({ isActive }) =>
                     `flex h-full items-center border-b-2 px-3 text-sm transition-colors ${
                       isActive
-                        ? "border-surface font-semibold text-surface"
-                        : "border-transparent text-surface/70 hover:text-surface"
+                        ? "border-surface font-semibold text-on-brand"
+                        : "border-transparent text-on-brand/70 hover:text-on-brand"
                     }`
                   }
                 >
@@ -48,10 +49,11 @@ export default function AppLayout() {
           </div>
           <div className="flex items-center gap-4 text-sm">
             <span className="font-semibold">{ambilNama() ?? "Pengguna"}</span>
+            <TombolTema varian="header" />
             <button
               type="button"
               onClick={keluar}
-              className="rounded-lg border border-surface/70 px-4 py-2 transition-colors hover:bg-surface/10"
+              className="rounded-lg border border-on-brand/70 px-4 py-2 transition-colors hover:bg-on-brand/10"
             >
               Keluar
             </button>

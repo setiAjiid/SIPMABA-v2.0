@@ -1,10 +1,21 @@
 @import "tailwindcss";
 
+/* Mode gelap diatur lewat atribut data-theme di <html> (lihat src/lib/tema.js). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-sans: 'Plus Jakarta Sans Variable', sans-serif;
   --color-brand: #123b7a;
   --color-brand-hover: #0d326a;
   --color-brand-soft: #f0f5fc;
+  /* Isi tombol utama; di mode gelap lebih redup dari teks brand. */
+  --color-brand-fill: #123b7a;
+  --color-brand-fill-hover: #0d326a;
+  /* Teks dan garis di atas brand-fill dan header. */
+  --color-on-brand: #ffffff;
+  --color-header-from: #123b7a;
+  --color-header-to: #123b7a;
+  --color-scrim: #14213d;
   --color-background: #f6f8fb;
   --color-surface: #ffffff;
   --color-ink: #14213d;
@@ -17,4 +28,39 @@
   --color-algorithm-des: #b7791f;
   --color-algorithm-rc4: #6d4ac4;
   --shadow-card: 0 1px 2px rgb(20 33 61 / 0.04), 0 12px 32px -12px rgb(20 33 61 / 0.12);
+}
+
+:root {
+  color-scheme: light;
+}
+
+/* Nilai dari halaman "Desain Antarmuka (Gelap)" di Figma. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-brand: #5b93e6;
+  --color-brand-hover: #74a5ec;
+  --color-brand-soft: #1a2a47;
+  --color-brand-fill: #2f63b8;
+  --color-brand-fill-hover: #3a71c9;
+  --color-on-brand: #ffffff;
+  --color-header-from: #0f2247;
+  --color-header-to: #1d3f7a;
+  --color-scrim: #000000;
+  --color-background: #0b1220;
+  --color-surface: #121b2d;
+  --color-ink: #e8edf5;
+  --color-muted: #9aa8bf;
+  --color-border: #26324a;
+  --color-success: #3fbf82;
+  --color-error: #f2766b;
+  --color-focus: #5b93e6;
+  --color-algorithm-aes: #2bb5c0;
+  --color-algorithm-des: #e0a93b;
+  --color-algorithm-rc4: #a78bf0;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -12px rgb(0 0 0 / 0.5);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-ink);
 }

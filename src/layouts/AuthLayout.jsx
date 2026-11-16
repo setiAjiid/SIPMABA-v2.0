@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { Lock } from "lucide-react";
 import logoIts from "../assets/logo-its.svg";
+import TombolTema from "../components/TombolTema";
 
 const tab = ({ isActive }) =>
   `flex-1 border-b-2 py-3 text-center text-sm font-bold transition-colors ${
@@ -24,11 +25,11 @@ const lingkar = [192, 320, 448, 576, 704, 832];
 export default function AuthLayout({ children, tanpaTab = false }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[648fr_792fr]">
-      <aside className="relative hidden flex-col overflow-hidden bg-gradient-to-b from-brand to-[#0b2c5c] px-20 py-14 text-surface lg:flex">
+      <aside className="relative hidden flex-col overflow-hidden bg-gradient-to-b from-[#123b7a] to-[#0b2c5c] px-20 py-14 text-on-brand lg:flex">
         {/* dekorasi */}
         <div
           aria-hidden
-          className="pointer-events-none absolute left-[380px] top-[-160px] size-[420px] rounded-full bg-surface/7 blur-3xl"
+          className="pointer-events-none absolute left-[380px] top-[-160px] size-[420px] rounded-full bg-on-brand/7 blur-3xl"
         />
         <div
           aria-hidden
@@ -43,7 +44,7 @@ export default function AuthLayout({ children, tanpaTab = false }) {
           {lingkar.map((d) => (
             <span
               key={d}
-              className="absolute rounded-full border border-surface/12"
+              className="absolute rounded-full border border-on-brand/12"
               style={{
                 width: d,
                 height: d,
@@ -67,7 +68,7 @@ export default function AuthLayout({ children, tanpaTab = false }) {
         />
         <pre
           aria-hidden
-          className="pointer-events-none absolute left-16 top-[45%] font-mono text-xs leading-8 tracking-[0.16em] text-surface/17"
+          className="pointer-events-none absolute left-16 top-[45%] font-mono text-xs leading-8 tracking-[0.16em] text-on-brand/17"
           style={{
             maskImage:
               "linear-gradient(to bottom, transparent, black 35%, transparent)",
@@ -85,26 +86,27 @@ export default function AuthLayout({ children, tanpaTab = false }) {
 
         <div className="relative mt-[124px] flex max-w-[488px] flex-col gap-5">
           <div className="h-px w-12 bg-[#c9a96a]" />
-          <span className="text-xs font-semibold tracking-[0.22em] text-surface/60">
+          <span className="text-xs font-semibold tracking-[0.22em] text-on-brand/60">
             KEAMANAN DATA MAHASISWA
           </span>
           <h2 className="text-[44px] font-semibold leading-[1.15] tracking-[-0.025em]">
             Data pendaftaran Anda tersimpan terenkripsi
           </h2>
-          <p className="text-base leading-[26px] text-surface/70">
+          <p className="text-base leading-[26px] text-on-brand/70">
             Dokumen dan informasi pribadi Anda dilindungi selama proses
             penerimaan mahasiswa baru.
           </p>
         </div>
 
-        <p className="relative mt-auto max-w-[488px] border-t border-surface/15 pt-6 text-xs leading-[18px] text-surface/60">
+        <p className="relative mt-auto max-w-[488px] border-t border-on-brand/15 pt-6 text-xs leading-[18px] text-on-brand/60">
           Sistem Informasi Penerimaan Mahasiswa Baru
           <br />
           Institut Teknologi Sepuluh Nopember
         </p>
       </aside>
 
-      <main className="flex items-center justify-center bg-background p-6">
+      <main className="relative flex items-center justify-center bg-background p-6">
+        <TombolTema className="absolute top-6 right-6" />
         <div className="flex w-full max-w-[448px] flex-col gap-6">
           <div className="flex flex-col gap-1">
             <p className="text-sm text-muted">Selamat datang di</p>
