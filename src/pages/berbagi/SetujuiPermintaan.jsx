@@ -157,6 +157,7 @@ function FormSetujui({ permintaan, peminta }) {
   return (
     <KerangkaBerbagi
       sapaan="Kotak masuk"
+      sapaanKe={KOTAK_MASUK}
       judul={`Setujui permintaan ${peminta.nama}`}
       keterangan={`Pilih data yang dibagikan. Sistem membuat kunci simetris, mengenkripsinya dengan kunci publik ${peminta.nama}, lalu Anda mengirimkannya lewat email atau WhatsApp.`}
       tab={false}
@@ -348,6 +349,7 @@ export default function SetujuiPermintaan() {
     return (
       <KerangkaBerbagi
         sapaan="Kotak masuk"
+      sapaanKe={KOTAK_MASUK}
         judul="Permintaan tidak tersedia"
         tab={false}
       >

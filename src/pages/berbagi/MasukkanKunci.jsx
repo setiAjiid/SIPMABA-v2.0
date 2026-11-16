@@ -310,6 +310,7 @@ export default function MasukkanKunci() {
     return (
       <KerangkaBerbagi
         sapaan="Permintaan saya"
+      sapaanKe={PERMINTAAN}
         judul="Kunci tidak dapat dimasukkan"
         tab={false}
       >
@@ -326,6 +327,7 @@ export default function MasukkanKunci() {
   return (
     <KerangkaBerbagi
       sapaan="Permintaan saya"
+      sapaanKe={PERMINTAAN}
       judul={`Masukkan kunci dari ${pemilik.nama}`}
       keterangan={`Tempel paket kunci yang dikirim ${pemilik.nama} lewat email atau WhatsApp, atau unggah berkasnya. Paket dibuka dengan kunci pribadi Anda.`}
       tab={false}

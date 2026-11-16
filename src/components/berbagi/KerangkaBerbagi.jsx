@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import Button from "../Button";
 import { jumlahMenunggu, muatKunci, useBerbagi } from "../../lib/berbagi";
 
@@ -12,9 +12,11 @@ const daftarTab = [
 
 // Kerangka bersama halaman Berbagi: sapaan, judul, dan tab navigasi.
 // Halaman alur (setujui, masukkan kunci, lihat data) tampil tanpa tab dan
-// memakai nama halaman asalnya sebagai sapaan.
+// memakai nama halaman asalnya sebagai sapaan; `sapaanKe` menjadikannya
+// tautan kembali ke halaman asal itu.
 export default function KerangkaBerbagi({
   sapaan = "Berbagi data",
+  sapaanKe,
   judul,
   keterangan,
   tab = true,
@@ -29,7 +31,17 @@ export default function KerangkaBerbagi({
     <div className="mx-auto max-w-6xl px-6 pt-14 pb-20">
       <div className="flex max-w-[960px] flex-col gap-10">
         <div className="flex flex-col gap-2 border-b border-border pb-8">
-          <p className="text-sm font-semibold text-muted">{sapaan}</p>
+          {sapaanKe ? (
+            <Link
+              to={sapaanKe}
+              className="w-fit text-sm font-semibold text-muted hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <span aria-hidden="true">‹ </span>
+              {sapaan}
+            </Link>
+          ) : (
+            <p className="text-sm font-semibold text-muted">{sapaan}</p>
+          )}
           <h1 className="text-3xl font-extrabold tracking-tight text-ink">
             {judul}
           </h1>
