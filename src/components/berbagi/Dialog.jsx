@@ -26,7 +26,7 @@ export default function Dialog({ judul, keterangan, onTutup, children }) {
       onClick={(e) => {
         if (e.target === ref.current) onTutup();
       }}
-      className="m-auto w-[520px] max-w-[calc(100vw-2rem)] rounded-2xl bg-surface shadow-[0_24px_48px_-12px_rgb(20_33_61/0.25)] backdrop:bg-ink/40"
+      className="m-auto w-[520px] max-w-[calc(100vw-2rem)] rounded-2xl bg-surface shadow-[0_24px_48px_-12px_rgb(20_33_61/0.25)] backdrop:bg-scrim/40 dark:backdrop:bg-scrim/60"
     >
       <div className="flex flex-col gap-5 p-6">
         <div className="flex flex-col gap-2">

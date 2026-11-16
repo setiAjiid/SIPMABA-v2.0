@@ -232,7 +232,7 @@ export default function FileDropzone({
                       onClick={() =>
                         jalankan(() => onUnduh(b, algoritma, setProgres))
                       }
-                      className="h-7 rounded bg-brand px-2 font-semibold text-surface disabled:opacity-60"
+                      className="h-7 rounded bg-brand-fill px-2 font-semibold text-on-brand disabled:opacity-60"
                     >
                       Unduh
                     </button>

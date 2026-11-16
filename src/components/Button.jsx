@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 
 const variants = {
-  primary: "border border-brand bg-brand text-surface hover:bg-brand-hover",
+  primary:
+    "border border-brand-fill bg-brand-fill text-on-brand hover:border-brand-fill-hover hover:bg-brand-fill-hover",
   secondary: "border border-border bg-surface text-brand hover:bg-brand-soft",
 };
 

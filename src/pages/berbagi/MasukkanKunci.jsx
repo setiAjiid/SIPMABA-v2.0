@@ -46,7 +46,7 @@ function Langkah({ aktif }) {
                   selesai
                     ? "bg-success text-surface"
                     : sekarang
-                      ? "bg-brand text-surface"
+                      ? "bg-brand-fill text-on-brand"
                       : "border border-border bg-surface text-muted"
                 }`}
               >

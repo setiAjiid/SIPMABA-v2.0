@@ -197,7 +197,7 @@ export default function KartuBerkas({
               type="button"
               disabled={sibuk}
               onClick={() => jalankan(() => unduhBerkas(berkas.id, pilihan))}
-              className="h-10 rounded-lg bg-brand px-4 text-sm font-semibold text-surface hover:bg-brand-hover disabled:opacity-60"
+              className="h-10 rounded-lg bg-brand-fill px-4 text-sm font-semibold text-on-brand hover:bg-brand-fill-hover disabled:opacity-60"
             >
               Unduh
             </button>
