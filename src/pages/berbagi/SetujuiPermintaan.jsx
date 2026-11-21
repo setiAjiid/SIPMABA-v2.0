@@ -16,7 +16,7 @@ import {
 } from "../../components/berbagi/Rincian";
 import { KATEGORI_DATA } from "../../data/berbagi";
 import { daftarUlang } from "../../data/berkas";
-import { ambilNama } from "../../lib/api";
+import { ambilNama, panggil } from "../../lib/api";
 import {
   cariPengguna,
   kunciPenggunaContoh,
@@ -72,6 +72,7 @@ function FormSetujui({ permintaan, peminta }) {
   const [info, setInfo] = useState("");
   const [terkirim, setTerkirim] = useState(false);
   const [tanya, setTanya] = useState(false);
+  const [mengirim, setMengirim] = useState(false);
 
   useEffect(() => {
     let batal = false;
@@ -118,6 +119,28 @@ function FormSetujui({ permintaan, peminta }) {
         ? "Paket kunci disalin."
         : "Tidak dapat menyalin otomatis. Pilih teks paket lalu salin secara manual.",
     );
+  }
+
+  // Server mengirim paket (sudah terenkripsi RSA) ke Gmail penerima.
+  async function kirimGmail() {
+    setMengirim(true);
+    setInfo("Mengirim paket kunci lewat Gmail...");
+    try {
+      await panggil("/berbagi/kirim-kunci", {
+        method: "POST",
+        body: {
+          nama_pengguna_penerima: peminta.nama_pengguna,
+          paket: kunci.paket,
+          sidik: kunci.sidik,
+        },
+      });
+      setTerkirim(true);
+      setInfo(`Paket kunci terkirim ke email ${peminta.nama}.`);
+    } catch (err) {
+      setInfo(`Gagal mengirim email: ${err.message}`);
+    } finally {
+      setMengirim(false);
+    }
   }
 
   function unduh() {
@@ -283,11 +306,12 @@ function FormSetujui({ permintaan, peminta }) {
                     Kirim lewat WhatsApp
                   </Button>
                   <Button
+                    type="button"
                     variant="secondary"
-                    href={`mailto:?subject=${encodeURIComponent("Paket kunci SIPMABA")}&body=${encodeURIComponent(pesanKirim)}`}
-                    onClick={() => setTerkirim(true)}
+                    onClick={kirimGmail}
+                    disabled={mengirim}
                   >
-                    Kirim lewat email
+                    {mengirim ? "Mengirim..." : "Kirim lewat Gmail"}
                   </Button>
                 </div>
               )}
